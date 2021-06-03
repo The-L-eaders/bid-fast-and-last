@@ -1,6 +1,6 @@
 ## TEAM MEMBERS: 
 <br />
-Gohfran Dayyat
+Ghofran Dayyat
 <br />
 Mohammad Azzam
 <br />
