@@ -13,13 +13,26 @@ const { Server } = require("socket.io");
 
 server.listen(PORT, () => console.log("listening " + PORT));
 
+
+//// Set the view engine for server-side templating
+app.set('view engine','ejs');
+
 app.use(express.static('./public'));
 
 app.use(cors());
 
+//routs
 app.get('/', (req, res) => {
     res.sendFile('/index.html');
 });
+app.get('/signup',async(req,res)=>{
+// let user= new User(req.body);
+res.render('register')
+
+})
+
+
+
 let io = require("socket.io")(server);
 
 
