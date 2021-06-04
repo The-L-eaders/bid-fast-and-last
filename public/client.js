@@ -1,8 +1,11 @@
 'use strict'
-const socket = io();
+
+let pathName = window.location.pathname;
+
+const socket = io(pathName);
 
 let text = ''
-text = window.prompt("What is Your name");
+    // text = window.prompt("What is Your name");
 socket.emit('newUser', text);
 
 let totalFromUser = 0
@@ -76,7 +79,7 @@ socket.on('liveBid', (latest) => {
 
 let product = document.getElementById('product');
 
-let counter = 60
+let counter = 5
 
 product.addEventListener('click', add)
 
@@ -102,6 +105,8 @@ socket.on('liveCounter', (data) => {
 
     end.innerHTML = `${counter} Seconds left`
 
+    let productId = document.getElementById('productId').value;
+
     setTimeout(() => {
         if (totalFromUser == 0) {
             product.removeEventListener('click', add);
@@ -109,6 +114,7 @@ socket.on('liveCounter', (data) => {
             auctionEnd.style.display = 'block'
             bidding.style.display = 'none'
             auctionEnd.innerHTML = `No one Bidded on the product, please come back agin on another auction <a href='/'> Home</a>!!`
+            socket.emit('notSold', { productId });
 
         } else {
             product.removeEventListener('click', add);
@@ -116,7 +122,7 @@ socket.on('liveCounter', (data) => {
             auctionEnd.style.display = 'block'
             bidding.style.display = 'none'
             auctionEnd.innerHTML = `The product Sold to ${lastUser}, please come back again on another auction  !!`
-
+            socket.emit('sold', { productId });
         }
 
         counter = 0
