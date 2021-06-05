@@ -21,15 +21,6 @@ app.use(express.static('./public'));
 
 app.use(cors());
 
-//routs
-app.get('/', (req, res) => {
-    res.sendFile('/index.html');
-});
-app.get('/signup',async(req,res)=>{
-// let user= new User(req.body);
-res.render('register')
-
-})
 
 
 
