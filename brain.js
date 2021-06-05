@@ -2,12 +2,15 @@
 
 const cors = require('cors')
 const PORT = process.env.PORT || 3000
+const bcrypt = require('bcrypt');
 
 const express = require('express');
 const app = express();
 // DataBase ..............................................
 const userSchema = require('./model/userSchema.js')
-const productSchema = require('./model/productSchema.js')
+const productSchema = require('./model/productSchema.js');
+
+const basicAuth = require('./middleWares/basicAuth.js');
 
 
 // ....................................................
@@ -15,8 +18,6 @@ app.set('view engine', 'ejs');
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// const { Server } = require("socket.io");
 
 const http = require('http');
 const server = http.createServer(app);
@@ -41,7 +42,8 @@ mongoose.connect(URI, options, () => {
     server.listen(PORT, () => console.log("listening " + PORT));
 });
 
-// Home page ------------------------------
+// Home page -----------------------------------------
+
 app.get('/', (req, res) => {
     res.render('homePage');
 });
@@ -74,8 +76,14 @@ app.get('/house', async(req, res) => {
 app.get('/register', (req, res) => {
     res.render('register');
 });
-app.post('/register', (req, res) => {
-    res.render('register');
+
+app.post('/register', async(req, res) => {
+    const { email, password, userName } = req.body;
+    console.log(req.body)
+
+    let saveToDB = await userSchema({ email, userName, password }).save()
+
+    res.render('logIn');
 });
 
 // Category Page ----------------------------------
@@ -84,11 +92,13 @@ app.get('/category', (req, res) => {
 });
 
 // logIn page ------------------------------
+
 app.get('/logIn', (req, res) => {
     res.render('logIn');
 });
-app.post('/logIn', (req, res) => {
-    res.render('logIn');
+
+app.post('/logIn', basicAuth, (req, res) => {
+    res.render('homePage');
 });
 
 
@@ -102,7 +112,6 @@ app.post('/logIn', (req, res) => {
 
 const car = io.of('/car');
 const house = io.of('/house');
-
 
 let carLast = {};
 
@@ -129,12 +138,13 @@ car.on('connection', socket => {
     car.emit('liveBid', carLast.totalFromUser);
 
     socket.on('notSold', async(id) => {
-        // جبنا البرودكت كله
 
-        let getProduct = await productSchema.find({ id });
-        let findUser = await userSchema.find({ _id: getProduct.userId });
-        let update = await userSchema.findByIdAndUpdate({ _id: getProduct.userId }, { productsStatus: 'NOT SOLD' });
-        let ToDeleteFromDB = await productSchema.findByIdAndDelete({ _id: getProduct.userId });
+        // let getProduct = await productSchema.find({ id });
+        // let findUser = await userSchema.find({ _id: getProduct.userId });
+        // let selectiveProduct = findUser.productsStatus.indexOf(getProduct);
+        // let ToUpdateFromDB = await productSchema.findByIdAndUpdate({ _id: getProduct.userId }, { status: 'Not Sold' });
+        // let update = await userSchema.findByIdAndUpdate({ _id: getProduct.userId }, { productsStatus[selectiveProduct] });
+        // let ToDeleteFromDB = await productSchema.findByIdAndDelete({ _id: getProduct.userId });
     });
 
     // socket.on('sold', async(id) => {
