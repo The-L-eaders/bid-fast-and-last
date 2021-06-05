@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+</head>
+
+<body class="jumbotron">
+
+
+    <main class="container">
+        <% car.forEach((data)=> { %>
+            <div id="product" class="row">
+                <input id="productId" value="<%= data._id %>" type="hidden">
+                <div class="col-4">
+                    <div class="text-center">
+                        <p id="endAt" class="font-weight-bold"></p>
+                        <img class="img-fluid mx-auto" width="400" src="<%= data.productImage %>">
+
+                        <p id="Description" class="font-weight-bold mt-2 text-center">
+                            <%= data.productDis %>
+                        </p>
+
+                        <div id="price" class="text-center">
+                            <button id="addFive" class=" btn btn-primary mr-2" value="500">500$</button>
+                            <button id="addTen" class=" btn btn-primary mr-2" value="1000">1000$</button>
+                            <button id="addTwen" class=" btn btn-primary mr-2" value="2000">2000$</button>
+                        </div>
+                    </div>
+                </div>
+                <header id="header" class="font-weight-normal col-4">
+                </header>
+
+
+                <div id="bidding" class="font-weight-bolder col-4" style="height: 400px; width: 100px; overflow-x: hidden; overflow-y: visible;">
+                </div>
+
+            </div>
+            <% })%>
+
+                <p id="auctionEnd" style="display: none; font-size: 50px;" class="font-weight-bolder"> </p>
+
+
+
+    </main>
+
+
+    <footer>
+    </footer>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script defer src="../public/client.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+</body>
+
+</html>
