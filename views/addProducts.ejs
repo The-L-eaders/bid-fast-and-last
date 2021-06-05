@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <form action="/add" method="post">
+        <label for="name">product Name</label>
+        <input type="text" name='name' >
+        
+        <label for="price">Starting Price</label>
+        <input type="text" name='price' >
+        
+        <label for="description">Description</label>
+        <input type="text" name='description'>
+
+        
+        <label for="image">product Image</label>
+        <input type="text" name='image' >
+
+        <label for="category">Category</label>        
+        <select name="category">
+            <option value="car">Car</option>
+            <option value="house">House</option>
+        </select>
+        
+        
+        <input type="submit" value="add to Auction">
+    </form>
+</body>
+
+</html>
