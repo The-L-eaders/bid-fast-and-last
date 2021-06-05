@@ -11,7 +11,7 @@ const userSchema = require('./model/userSchema.js')
 const productSchema = require('./model/productSchema.js');
 
 const basicAuth = require('./middleWares/basicAuth.js');
-
+const Auth = require('./middleWares/bearerAuth');
 
 // ....................................................
 app.set('view engine', 'ejs');
@@ -24,6 +24,7 @@ const server = http.createServer(app);
 
 const mongoose = require('mongoose');
 const user = require('./model/userSchema.js');
+const product = require('./model/productSchema.js');
 const URI = 'mongodb://localhost:27017/auction'
 
 const options = {
@@ -49,13 +50,13 @@ app.get('/', (req, res) => {
 });
 
 // bidding page --------------------------------------------
-app.post('/car', async(req, res) => {
+app.post('/car', async (req, res) => {
     const { name, startingPrice, category, productImage, productDis } = req.body;
     let data = await productSchema({ productName: name, startingPrice: startingPrice, category: category, productImage: productImage, productDis: productDis }).save();
     res.send(data);
 });
 
-app.get('/car', async(req, res) => {
+app.get('/car', async (req, res) => {
     let data = await productSchema.find({ category: 'car' });
     data.sort((a, b) => {
         a['createdAt'] - b['createdAt']
@@ -64,7 +65,7 @@ app.get('/car', async(req, res) => {
     res.render('biddingPage', { car: data });
 });
 
-app.get('/house', async(req, res) => {
+app.get('/house', async (req, res) => {
     let data = await productSchema.find({ category: 'house' });
     data.sort((a, b) => {
         a['createdAt'] - b['createdAt']
@@ -77,7 +78,7 @@ app.get('/register', (req, res) => {
     res.render('register');
 });
 
-app.post('/register', async(req, res) => {
+app.post('/register', async (req, res) => {
     const { email, password, userName } = req.body;
     console.log(req.body)
 
@@ -98,9 +99,42 @@ app.get('/logIn', (req, res) => {
 });
 
 app.post('/logIn', basicAuth, (req, res) => {
-    res.render('homePage');
+    // console.log(req.user.token);
+    req.token = req.user.token;
+    console.log(req.token);
+    res.cookie('token', req.token);
+    res.redirect('/');
 });
 
+
+app.get('/add', Auth, (req, res) => {
+    res.render('addProducts');
+});
+
+app.post('/add', Auth, async (req, res) => {
+    console.log('ho');
+    const id = req.user._id;
+    let { name, price, desciption, image, category } = req.body;
+    let x = await productSchema(
+        {
+            productName: name,
+            startingPrice: price,
+            productDis: desciption,
+            productImage: image,
+            category: category,
+            userId: id
+        }).save();
+    const user = await userSchema.findByIdAndUpdate({ _id: id }, { $push: { product: x } });
+    // console.log(user);
+    // user.addToProduct(x);
+    // user[0].product.push(x);
+    // let xx = user[0].product.push(x)
+    // console.log(xx);
+    // const user1 = await userSchema.findByIdAndUpdate({ _id: id },);
+
+    // console.log(user[0].product.push(x), 'asasasas');
+    res.send(x);
+})
 
 
 // ----------------------------------------------------------------------------------------
@@ -137,7 +171,7 @@ car.on('connection', socket => {
     });
     car.emit('liveBid', carLast.totalFromUser);
 
-    socket.on('notSold', async(id) => {
+    socket.on('notSold', async (id) => {
 
         // let getProduct = await productSchema.find({ id });
         // let findUser = await userSchema.find({ _id: getProduct.userId });
