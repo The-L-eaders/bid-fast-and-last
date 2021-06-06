@@ -49,7 +49,7 @@ mongoose.connect(URI, options, () => {
 // Home page -----------------------------------------
 
 app.get('/', (req, res) => {
-    res.render('homePage');
+    res.render('homePage',{token:req.cookies.token});
 });
 
 // bidding page --------------------------------------------
@@ -64,8 +64,6 @@ app.get('/car', async (req, res) => {
     data.sort((a, b) => {
         a['createdAt'] - b['createdAt']
     });
-    // res.send(data)
-
     res.render('biddingPage', { data: data[0] });
 });
 
@@ -92,7 +90,7 @@ app.post('/register', async (req, res) => {
 });
 
 // Category Page ----------------------------------
-app.get('/category', (req, res) => {
+app.get('/category',Auth, (req, res) => {
     res.render('category');
 });
 
@@ -103,14 +101,16 @@ app.get('/logIn', (req, res) => {
 });
 
 app.post('/logIn', basicAuth, (req, res) => {
-    // console.log(req.user.token);
     req.token = req.user.token;
     console.log(req.token);
     res.cookie('token', req.token);
     res.redirect('/');
 });
 
-
+app.get('/logout', (req,res)=>{
+    res.clearCookie('token')
+    res.redirect('/')
+})
 app.get('/add', Auth, (req, res) => {
     res.render('addProducts');
 });
@@ -119,7 +119,7 @@ app.post('/add', Auth, async (req, res) => {
     console.log('ho');
     const id = req.user._id;
     let { name, price, description, image, category } = req.body;
-    let x = await productSchema(
+    let productSave = await productSchema(
         {
             productName: name,
             startingPrice: price,
@@ -128,7 +128,7 @@ app.post('/add', Auth, async (req, res) => {
             category: category,
             userId: id
         }).save();
-    const user = await userSchema.findByIdAndUpdate({ _id: id }, { $push: { product: x } });
+    const user = await userSchema.findByIdAndUpdate({ _id: id }, { $push: { product: productSave } });
     // console.log(user);
     // user.addToProduct(x);
     // user[0].product.push(x);
@@ -137,7 +137,7 @@ app.post('/add', Auth, async (req, res) => {
     // const user1 = await userSchema.findByIdAndUpdate({ _id: id },);
 
     // console.log(user[0].product.push(x), 'asasasas');
-    res.send(x);
+    res.send(productSave);
 })
 
 
