@@ -13,7 +13,7 @@
 
 
     <main class="container">
-       
+       <%if(data){ %>
             <div id="product" class="row">
                 <input id="productId" value="<%= data._id %>" type="hidden">
                 <div class="col-4">
@@ -44,7 +44,10 @@
       
 
                 <p id="auctionEnd" style="display: none; font-size: 50px;" class="font-weight-bolder"> </p>
-
+        <%}else{%>
+            <h4>No bidding</h4>
+        <%}%>
+        
 
 
     </main>
