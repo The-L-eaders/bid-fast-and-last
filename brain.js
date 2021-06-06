@@ -5,6 +5,7 @@ const PORT = process.env.PORT || 3000
 const bcrypt = require('bcrypt');
 
 const express = require('express');
+const cookieParser = require('cookie-parser')
 const app = express();
 // DataBase ..............................................
 const userSchema = require('./model/userSchema.js')
@@ -18,6 +19,7 @@ app.set('view engine', 'ejs');
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser())
 
 const http = require('http');
 const server = http.createServer(app);
@@ -31,6 +33,7 @@ const options = {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true,
+    useFindAndModify: true
 };
 
 
@@ -62,7 +65,8 @@ app.get('/car', async (req, res) => {
         a['createdAt'] - b['createdAt']
     });
     // res.send(data)
-    res.render('biddingPage', { car: data });
+
+    res.render('biddingPage', { data: data[0] });
 });
 
 app.get('/house', async (req, res) => {
@@ -71,7 +75,7 @@ app.get('/house', async (req, res) => {
         a['createdAt'] - b['createdAt']
     });
 
-    res.render('biddingPage', { house: data });
+    res.render('biddingPage', { data: data[0] });
 });
 // register page ------------------------------------------
 app.get('/register', (req, res) => {
@@ -80,7 +84,7 @@ app.get('/register', (req, res) => {
 
 app.post('/register', async (req, res) => {
     const { email, password, userName } = req.body;
-    console.log(req.body)
+    // console.log(req.body)
 
     let saveToDB = await userSchema({ email, userName, password }).save()
 
@@ -114,12 +118,12 @@ app.get('/add', Auth, (req, res) => {
 app.post('/add', Auth, async (req, res) => {
     console.log('ho');
     const id = req.user._id;
-    let { name, price, desciption, image, category } = req.body;
+    let { name, price, description, image, category } = req.body;
     let x = await productSchema(
         {
             productName: name,
             startingPrice: price,
-            productDis: desciption,
+            productDis: description,
             productImage: image,
             category: category,
             userId: id
@@ -172,18 +176,19 @@ car.on('connection', socket => {
     car.emit('liveBid', carLast.totalFromUser);
 
     socket.on('notSold', async (id) => {
+        console.log(id.productId, 'id')
 
-        // let getProduct = await productSchema.find({ id });
-        // let findUser = await userSchema.find({ _id: getProduct.userId });
-        // let selectiveProduct = findUser.productsStatus.indexOf(getProduct);
-        // let ToUpdateFromDB = await productSchema.findByIdAndUpdate({ _id: getProduct.userId }, { status: 'Not Sold' });
-        // let update = await userSchema.findByIdAndUpdate({ _id: getProduct.userId }, { productsStatus[selectiveProduct] });
-        // let ToDeleteFromDB = await productSchema.findByIdAndDelete({ _id: getProduct.userId });
+        let getProduct = await productSchema.find({ _id: id.productId });
+        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { 'status': "still in progress ." } } }, { $set: { 'product.$.status': 'not sold' } });
+        let deleted = await productSchema.findByIdAndDelete({ _id: id.productId })
+
     });
 
-    // socket.on('sold', async(id) => {
-    //     let deleteProduct = await userSchema.findOneAndUpdate({ id }, {});
-    // });
+    socket.on('sold', async (id) => {
+        let getProduct = await productSchema.find({ _id: id.productId });
+        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { 'status': "still in progress ." } } }, { $set: { 'product.$.status': `sold  price ${id.totalFromUser} ` } });
+        let deleted = await productSchema.findByIdAndDelete({ _id: id.productId })
+    });
 });
 
 

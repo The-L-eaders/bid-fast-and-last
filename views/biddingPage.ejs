@@ -13,13 +13,14 @@
 
 
     <main class="container">
-        <% car.forEach((data)=> { %>
+       
             <div id="product" class="row">
                 <input id="productId" value="<%= data._id %>" type="hidden">
                 <div class="col-4">
                     <div class="text-center">
                         <p id="endAt" class="font-weight-bold"></p>
                         <img class="img-fluid mx-auto" width="400" src="<%= data.productImage %>">
+                        <input type="hidden"  value="<%=data.startingPrice %>" id="startingPrice">
 
                         <p id="Description" class="font-weight-bold mt-2 text-center">
                             <%= data.productDis %>
@@ -40,7 +41,7 @@
                 </div>
 
             </div>
-            <% })%>
+      
 
                 <p id="auctionEnd" style="display: none; font-size: 50px;" class="font-weight-bolder"> </p>
 
