@@ -8,9 +8,10 @@ let text = ''
     // text = window.prompt("What is Your name");
 socket.emit('newUser', text);
 
-let totalFromUser = 0
+let price =parseInt(document.getElementById('startingPrice').value);
+let totalFromUser = price
+console.log(totalFromUser)
 let lastUser = ''
-
 let addFive = document.getElementById("addFive");
 let addTwen = document.getElementById('addTwen');
 let addTen = document.getElementById('addTen');
@@ -67,7 +68,7 @@ socket.on('showLatest', total => {
 
 socket.on('liveBid', (latest) => {
     totalFromUser = latest;
-    console.log(latest);
+    // console.log(latest);
     let user = document.createElement('p')
     user.innerHTML = `Last Bid is ${latest}$`
     bidding.append(user);
@@ -79,7 +80,7 @@ socket.on('liveBid', (latest) => {
 
 let product = document.getElementById('product');
 
-let counter = 5
+let counter = 10
 
 product.addEventListener('click', add)
 
@@ -87,7 +88,7 @@ product.addEventListener('click', add)
 
 function add() {
     socket.emit('startBidding', { counter, totalFromUser, text });
-    clearTimeout();
+    // clearTimeout();
 }
 
 
@@ -106,26 +107,28 @@ socket.on('liveCounter', (data) => {
     end.innerHTML = `${counter} Seconds left`
 
     let productId = document.getElementById('productId').value;
+ if (counter===0){
 
-    setTimeout(() => {
-        if (totalFromUser == 0) {
-            product.removeEventListener('click', add);
-            product.style.display = 'none';
-            auctionEnd.style.display = 'block'
-            bidding.style.display = 'none'
-            auctionEnd.innerHTML = `No one Bidded on the product, please come back agin on another auction <a href='/'> Home</a>!!`
-            socket.emit('notSold', { productId });
-
-        } else {
-            product.removeEventListener('click', add);
-            product.style.display = 'none';
-            auctionEnd.style.display = 'block'
-            bidding.style.display = 'none'
-            auctionEnd.innerHTML = `The product Sold to ${lastUser}, please come back again on another auction  !!`
-            socket.emit('sold', { productId });
-        }
-
-        counter = 0
-    }, timeOut);
+     // setTimeout(() => {
+         if (totalFromUser == price) {
+             product.removeEventListener('click', add);
+             product.style.display = 'none';
+             auctionEnd.style.display = 'block'
+             bidding.style.display = 'none'
+             auctionEnd.innerHTML = `No one Bidded on the product, please come back agin on another auction <a href='/'> Home</a>!!`
+             socket.emit('notSold', { productId });
+ 
+         } else {
+             product.removeEventListener('click', add);
+             product.style.display = 'none';
+             auctionEnd.style.display = 'block'
+             bidding.style.display = 'none'
+             auctionEnd.innerHTML = `The product Sold to ${lastUser}, please come back again on another auction  !!`
+             socket.emit('sold', { productId,totalFromUser });
+         }
+ 
+         counter = 0
+     // }, timeOut);
+ }
 
 });
