@@ -33,7 +33,7 @@ UserSchema.virtual('token').get(function () {
     let tokenObject = {
         email: this.email,
     }
-    return JWT.sign(tokenObject, SECRET, { expiresIn: 60 * 15 });
+    return JWT.sign(tokenObject, SECRET, { expiresIn: 60 * 60 });
 });
 
 UserSchema.pre('save', async function () {

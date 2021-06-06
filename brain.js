@@ -145,25 +145,23 @@ app.post('/add', Auth, async (req, res) => {
 
 
 
-
-
-
 const car = io.of('/car');
 const house = io.of('/house');
 
 let carLast = {};
-
 car.on('connection', socket => {
     socket.on('startBidding', (obj) => {
         carLast = obj;
+        console.log(obj,'object');
+        console.log(carLast, 'from brain start Bidding');
         setInterval(() => {
             if (obj.counter == 0) {
-                return obj.counter = 0, obj.totalFromUser = 0;
+                return obj.counter = 0, obj.lastPrice = 0;
             };
             obj.counter = obj.counter - 1;
             car.emit('liveCounter', obj.counter);
         }, 1000);
-        console.log(obj.totalFromUser, '*-----*', obj.text)
+        console.log(obj.lastPrice, '*-----*', obj.text)
     });
     let users = ''
     socket.on('newUser', data => {
@@ -171,9 +169,11 @@ car.on('connection', socket => {
         socket.broadcast.emit('greeting', data);
     });
     socket.on('increasePrice', (total) => {
+        console.log(total,'from brain ---------increase')
         car.emit('showLatest', { total: total, name: users });
     });
-    car.emit('liveBid', carLast.totalFromUser);
+    console.log(carLast.lastPrice,'------------------car-------------');
+    car.emit('liveBid', carLast.lastPrice);
 
     socket.on('notSold', async (id) => {
         console.log(id.productId, 'id')
