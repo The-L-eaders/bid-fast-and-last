@@ -4,27 +4,35 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script>
+        let x = document.cookie;
+        console.log(x.split('=').pop());
+    </script>
 </head>
 
 <body>
     <header>
+
         <nav>
             <ul>
                 <li>
                     <a href="/">Home</a>
                 </li>
                 <li>
-                    <a href="/category">Category</a>
-                </li>
-                <li>
-                    <a href="/bidding">Bidding</a>
-                </li>
-                <li>
-                    <a href="/register">Register</a>
-                </li>
-                <li>
-                    <a href="/login">login</a>
-                </li>
+                    <%if(token){%>
+                        <a href="/logout">logout</a>
+                        <%}else{%>
+                            <a href="/register">Register</a>
+                <li> <a href="/login">Login</a></li>
+                <%}%>
+                    </li>
+                    <li>
+                        <a href="/category">Category</a>
+                    </li>
+                    <li>
+                        <a href="/add">Add Product</a>
+                    </li>
+
             </ul>
         </nav>
     </header>
@@ -35,6 +43,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <!-- <script defer src="../public/client.js"> -->
     <!-- </script> -->
+
 </body>
 
 </html>

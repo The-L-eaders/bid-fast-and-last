@@ -114,7 +114,7 @@ socket.on('liveCounter', (data) => {
     if (counter === 0) {
 
         // setTimeout(() => {
-        if (totalFromUser == price) {
+        if (lastPrice == price) {
             product.removeEventListener('click', add);
             product.style.display = 'none';
             auctionEnd.style.display = 'block'
