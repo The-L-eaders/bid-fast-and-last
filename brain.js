@@ -47,62 +47,78 @@ mongoose.connect(URI, options, () => {
 // Home page -----------------------------------------
 
 app.get('/', (req, res) => {
-    res.render('homePage',{token:req.cookies.token});
+    res.render('homePage', { token: req.cookies.token });
 });
 
 
 
 
 // bidding page --------------------------------------------
-app.post('/car', async (req, res) => {
-    const { name, startingPrice, category, productImage, productDis } = req.body;
-    let data = await productSchema({ productName: name, startingPrice: startingPrice, category: category, productImage: productImage, productDis: productDis }).save();
-    res.send(data);
-});
+// app.post('/car', async(req, res) => {
+//     const { name, startingPrice, category, productImage, productDis } = req.body;
+//     let data = await productSchema({ productName: name, startingPrice: startingPrice, category: category, productImage: productImage, productDis: productDis }).save();
+//     res.send(data);
+// });
 
-app.get('/car',Auth,async (req, res) => {
-    // console.log(req.user._id,'user Id');
+app.get('/car', Auth, async(req, res) => {
     let data = await productSchema.find({ category: 'car' });
+
+
     data.sort((a, b) => {
         a['createdAt'] - b['createdAt']
     });
-    // console.log(data[0]);
-    if(data[0]){
-        if(data[0].userId == req.user._id ){
-            console.log('for the love of all god')
-           res.send('You Cant bid in your own Product')
-        }else{
+
+    if (data[0]) {
+        if (data[0].userId == req.user._id) {
+            res.send('You Cant bid in your own Product')
+        } else {
             res.render('biddingPage', { data: data[0] });
         }
-    }else{
+    } else {
         res.render('biddingPage', { data: data[0] });
     }
 });
 
-app.get('/house',Auth ,async (req, res) => {
-    let data = await productSchema.find({ category: 'house' });
-    data.sort((a, b) => {
+app.get('/house', Auth, async(req, res) => {
+
+    let dataHouse = await productSchema.find({ category: 'house' });
+    console.log(dataHouse)
+    dataHouse.sort((a, b) => {
         a['createdAt'] - b['createdAt']
     });
 
-    res.render('biddingPage', { data: data[0] });
+    if (dataHouse[0]) {
+        if (dataHouse[0].userId == req.user._id) {
+            res.send('You Cant bid in your own Product')
+        } else {
+            res.render('biddingPage', { data: dataHouse[0] });
+        }
+    } else {
+        res.render('biddingPage', { data: dataHouse[0] });
+    }
 });
+
+
+// app.post('/house', async(req, res) => {
+//     const { name, startingPrice, category, productImage, productDis } = req.body;
+//     let data = await productSchema({ productName: name, startingPrice: startingPrice, category: category, productImage: productImage, productDis: productDis }).save();
+//     res.send(data);
+// });
+
 // register page ------------------------------------------
 app.get('/register', (req, res) => {
     res.render('register');
 });
 
-app.post('/register', async (req, res) => {
+app.post('/register', async(req, res) => {
     const { email, password, userName } = req.body;
-    // console.log(req.body)
-
     let saveToDB = await userSchema({ email, userName, password }).save()
 
     res.render('logIn');
 });
 
 // Category Page ----------------------------------
-app.get('/category',Auth, (req, res) => {
+app.get('/category', Auth, (req, res) => {
     res.render('category');
 });
 
@@ -114,12 +130,11 @@ app.get('/logIn', (req, res) => {
 
 app.post('/logIn', basicAuth, (req, res) => {
     req.token = req.user.token;
-    console.log(req.token);
     res.cookie('token', req.token);
     res.redirect('/');
 });
 
-app.get('/logout', (req,res)=>{
+app.get('/logout', (req, res) => {
     res.clearCookie('token')
     res.redirect('/')
 })
@@ -127,19 +142,17 @@ app.get('/add', Auth, (req, res) => {
     res.render('addProducts');
 });
 
-app.post('/add', Auth, async (req, res) => {
-    console.log('ho');
+app.post('/add', Auth, async(req, res) => {
     const id = req.user._id;
     let { name, price, description, image, category } = req.body;
-    let productSave = await productSchema(
-        {
-            productName: name,
-            startingPrice: price,
-            productDis: description,
-            productImage: image,
-            category: category,
-            userId: id
-        }).save();
+    let productSave = await productSchema({
+        productName: name,
+        startingPrice: price,
+        productDis: description,
+        productImage: image,
+        category: category,
+        userId: id
+    }).save();
     const user = await userSchema.findByIdAndUpdate({ _id: id }, { $push: { product: productSave } });
     res.send(productSave);
 })
@@ -153,101 +166,170 @@ const car = io.of('/car');
 const house = io.of('/house');
 
 let carLast = {};
+
+
+
+
+
+
+let lastToken = ''
+
+
+
+
+
+
+
+
 car.on('connection', socket => {
 
 
+
+    socket.on('increasePrice', (data) => {
+
+        lastToken = data.token
+        car.emit('showLatest', { total: data.lastPrice, name: users });
+    });
+
+    socket.on('sold', async(data) => {
+        let getProduct = await productSchema.find({ _id: data.product._id });
+        const soldTo = {
+            name: getProduct[0].productName,
+            price: carLast.lastPrice,
+            image: getProduct[0].productImage,
+            description: getProduct[0].productDis
+        }
+
+        const dbUser = await userSchema.authenticateWithToken(lastToken);
+        const user = await userSchema.findByIdAndUpdate({ _id: dbUser._id }, { $push: { cart: soldTo } });
+        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': `sold  price ${carLast.lastPrice} ` } });
+        let deleted = await productSchema.findByIdAndDelete({ _id: data.product._id })
+        lastToken = ''
+    });
+
+    let product = {}
+    async function generateProduct() {
+        let getProd = await productSchema.find({ category: 'car' });
+        getProd.sort((a, b) => {
+            a['createdAt'] - b['createdAt']
+        });
+        product = getProd[0]
+    }
+
+
+    let notSold = async() => {
+        let getProduct = await productSchema.find({ _id: product._id });
+        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': 'not sold' } });
+        let deleted = await productSchema.findByIdAndDelete({ _id: product._id });
+        lastToken = ''
+    }
+
     socket.on('startBidding', (obj) => {
+        generateProduct();
         carLast = obj;
-        // console.log(obj,'object');
-        // console.log(carLast, 'from brain start Bidding');
-        setInterval(() => {
+
+        let interval = setInterval(() => {
             if (obj.counter == 0) {
+
+                if (lastToken != '') {
+                    car.emit('try', { product, lastToken });
+                } else {
+                    notSold();
+                }
+                clearInterval(interval);
                 return obj.counter = 0, obj.lastPrice = 0;
             };
             obj.counter = obj.counter - 1;
             car.emit('liveCounter', obj.counter);
         }, 1000);
-        console.log(obj.lastPrice, '*-----*', obj.text)
     });
 
-    /**
-     *  return login user 
-     * 
-     */
+
     let users = '';
-    let userSold={}; //?
-    socket.on('newUser',async data => {
-        // console.log(data.token)
+    let userSold = {};
+    socket.on('newUser', async data => {
         const validUser = await userSchema.authenticateWithToken(data.token);
         users = validUser.userName;
-        userSold=validUser;
+        userSold = validUser;
         socket.broadcast.emit('greeting', users);
     });
 
-    socket.on('increasePrice', (total) => {
-        car.emit('showLatest', { total: total, name: users });
-    });
-    // console.log(carLast.lastPrice,'------------------car-------------');
     car.emit('liveBid', carLast.lastPrice);
-
-    socket.on('notSold', async (id) => {
-        // console.log(id.productId, 'id')
-        let getProduct = await productSchema.find({ _id: id.productId });
-        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { 'status': "still in progress ." } } }, { $set: { 'product.$.status': 'not sold' } });
-        let deleted = await productSchema.findByIdAndDelete({ _id: id.productId })
-
-    });
-
-    socket.on('sold', async (id) => {
-        /**
-         * seller 
-         */
-        console.log(id);
-        let getProduct = await productSchema.find({ _id: id.productId });
-        
-        console.log(userSold,'is this the one who bue ? ');
-        // console.log(getProduct,'get');
-        const soldTo = {
-            name:getProduct[0].productName,
-            price:id.lastPrice,
-            image:getProduct[0].productImage,
-            description:getProduct[0].productDis
-        }
-        const dbUser= await userSchema.authenticateWithToken(id.token);
-        const user = await userSchema.findByIdAndUpdate({ _id: dbUser._id }, { $push: { cart: soldTo } });
-        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { 'status': "still in progress ." } } }, { $set: { 'product.$.status': `sold  price ${id.lastPrice} ` } });
-
-        let deleted = await productSchema.findByIdAndDelete({ _id: id.productId })
-        /** 
-         * buyer 
-        */
-
-    });
 });
 
 
 
+
+
+
+
 let houseLast = {};
+// let lastTokenHouse = ''
 house.on('connection', socket => {
+    socket.on('sold', async(data) => {
+        let getProduct = await productSchema.find({ _id: data.product._id });
+        const soldTo = {
+            name: getProduct[0].productName,
+            price: houseLast.lastPrice,
+            image: getProduct[0].productImage,
+            description: getProduct[0].productDis
+        }
+        const dbUser = await userSchema.authenticateWithToken(lastToken);
+        const user = await userSchema.findByIdAndUpdate({ _id: dbUser._id }, { $push: { cart: soldTo } });
+        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': `sold  price ${houseLast.lastPrice} ` } });
+        let deleted = await productSchema.findByIdAndDelete({ _id: data.product._id })
+        lastToken = ''
+    });
+
+    let product = {}
+    async function generateProduct() {
+        let getProd = await productSchema.find({ category: 'house' });
+        getProd.sort((a, b) => {
+            a['createdAt'] - b['createdAt']
+        });
+        product = getProd[0]
+    }
+
+    let notSold = async() => {
+        let getProduct = await productSchema.find({ _id: product._id });
+        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': 'not sold' } });
+        let deleted = await productSchema.findByIdAndDelete({ _id: product._id });
+        lastToken = ''
+    }
+
+
     socket.on('startBidding', (obj) => {
+        generateProduct();
         houseLast = obj;
-        setInterval(() => {
+        let interval = setInterval(() => {
             if (obj.counter == 0) {
-                return obj.counter = 0, obj.totalFromUser = 0;
+
+                if (lastToken != '') {
+                    house.emit('try', { product, lastToken });
+                } else {
+
+                    notSold();
+                }
+                clearInterval(interval);
+                return obj.counter = 0, obj.lastPrice = 0;
             };
             obj.counter = obj.counter - 1;
             house.emit('liveCounter', obj.counter);
         }, 1000);
-        console.log(obj.totalFromUser, '*-----*', obj.text)
     });
-    let users = ''
-    socket.on('newUser', data => {
-        users = data
-        socket.broadcast.emit('greeting', data);
+
+    let users = '';
+    let userSold = {};
+    socket.on('newUser', async data => {
+        const validUser = await userSchema.authenticateWithToken(data.token);
+        users = validUser.userName;
+        userSold = validUser;
+        socket.broadcast.emit('greeting', users);
     });
+
     socket.on('increasePrice', (total) => {
-        house.emit('showLatest', { total: total, name: users });
+        lastToken = total.token
+        house.emit('showLatest', { total: total.lastPrice, name: users });
     });
-    house.emit('liveBid', houseLast.totalFromUser);
-    console.log('house');
+    house.emit('liveBid', houseLast.lastPrice);
 });
