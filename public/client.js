@@ -3,10 +3,10 @@
 let pathName = window.location.pathname;
 
 const socket = io(pathName);
-
-let text = ''
-// text = window.prompt("What is Your name");
-socket.emit('newUser', text);
+let text ='';
+let token = document.cookie.split('=').pop(); 
+console.log(token);
+socket.emit('newUser', {token});
 
 let price = parseInt(document.getElementById('startingPrice').value);
 let totalFromUser = 0;
@@ -84,7 +84,7 @@ socket.on('liveBid', (latest) => {
 
 let product = document.getElementById('product');
 
-let counter = 40
+let counter = 15
 
 product.addEventListener('click', add)
 
@@ -102,7 +102,7 @@ let end = document.getElementById('endAt')
 let timeOut = 0;
 
 socket.on('liveCounter', (data) => {
-
+    product.removeEventListener('click',add);
     counter = data;
 
     timeOut = counter * 1000
@@ -123,12 +123,13 @@ socket.on('liveCounter', (data) => {
             socket.emit('notSold', { productId });
 
         } else {
+            console.log('How ???')
             product.removeEventListener('click', add);
             product.style.display = 'none';
             auctionEnd.style.display = 'block'
             bidding.style.display = 'none'
             auctionEnd.innerHTML = `The product Sold to ${lastUser}, please come back again on another auction  !!`
-            socket.emit('sold', { productId, totalFromUser });
+            socket.emit('sold', { productId, lastPrice , token });
         }
 
         counter = 0

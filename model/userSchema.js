@@ -16,6 +16,11 @@ const UserSchema = new mongoose.Schema({
         type: schema.Types.Array,
         ref: 'product',
         required: true,
+    },
+    cart: {
+        type: schema.Types.Array,
+        ref: 'product',
+        required: true,
     }
 
     
@@ -33,7 +38,7 @@ UserSchema.virtual('token').get(function () {
     let tokenObject = {
         email: this.email,
     }
-    return JWT.sign(tokenObject, SECRET, { expiresIn: 60*60 });
+    return JWT.sign(tokenObject, SECRET, { expiresIn: 60 * 60 });
 });
 
 UserSchema.pre('save', async function () {
