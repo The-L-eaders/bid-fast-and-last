@@ -25,13 +25,13 @@ addFive.addEventListener('click', function(e) {
 addTwen.addEventListener('click', function(e) {
     let dollar = parseInt(addTwen.value);
     lastPrice += dollar;
-    socket.emit('increasePrice', lastPrice);
+    socket.emit('increasePrice', { lastPrice, token });
 });
 
 addTen.addEventListener('click', function(e) {
     let dollar = parseInt(addTen.value);
     lastPrice += dollar;
-    socket.emit('increasePrice', lastPrice);
+    socket.emit('increasePrice', { lastPrice, token });
 });
 
 
@@ -79,7 +79,23 @@ socket.on('liveBid', (latest) => {
 
 let product = document.getElementById('product');
 
-let counter = 15
+let counter = parseInt(document.getElementById('timer').value);
+
+function format(time) {   
+    // Hours, minutes and seconds
+    let hrs = ~~(time / 3600);
+    let mins = ~~((time % 3600) / 60);
+    let secs = ~~time % 60;
+    // Output like "1:01" or "4:03:59" or "123:03:59"
+    let ret = "";
+    if (hrs > 0) {
+        ret += "" + hrs + ":" + (mins < 10 ? "0" : "");
+    }
+    ret += "" + mins + ":" + (secs < 10 ? "0" : "");
+    ret += "" + secs;
+    return ret;
+}
+
 
 product.addEventListener('click', add)
 
@@ -92,16 +108,12 @@ function add() {
 
 let auctionEnd = document.getElementById('auctionEnd')
 let end = document.getElementById('endAt')
-let timeOut = 0;
 
 socket.on('liveCounter', (data) => {
     product.removeEventListener('click', add);
     counter = data;
 
-    timeOut = counter * 1000
-
-
-    end.innerHTML = `${counter} Seconds left`
+    end.innerHTML = `Time left ${format(counter)} `
 
     if (counter === 0) {
         if (lastPrice == price) {
@@ -124,7 +136,7 @@ socket.on('liveCounter', (data) => {
 // 3ebra
 socket.on('try', data => {
     console.log(data)
-    if (data.lastToken == token) {
+    if (data.lastToken == token || data.lastTokenHouse == token ) {
         socket.emit('sold', data);
     }
 });

@@ -10,7 +10,8 @@ const ProductSchema = new mongoose.Schema({
     productImage: { type: String, required: true },
     category: { type: String, enum: ['car', 'house'], required: true },
     status: { type: String , default:"still in progress ." },
-    userId: { type: String }
+    userId: { type: String },
+    timer:{type :Number  }
 }, { timestamps: true });
 
 const product = mongoose.model('product', ProductSchema);
