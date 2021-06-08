@@ -22,6 +22,9 @@ Make auction process easier and more accessible, by providing real-time auction 
       What is the minimum required for you to present on your demo day?
 <br />
 
+## Heroku Deployment:
+![Bid Fast And Last](https://bid-fast-and-last.herokuapp.com/)
+
   - Register and sign-in page
   - Choosing product page
   - Form to offer products to sell
