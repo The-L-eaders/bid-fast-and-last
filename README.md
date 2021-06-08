@@ -23,7 +23,7 @@ Make auction process easier and more accessible, by providing real-time auction 
 <br />
 
 ## Heroku Deployment:
-![Bid Fast And Last](https://bid-fast-and-last.herokuapp.com/)
+[Bid Fast And Last](https://bid-fast-and-last.herokuapp.com/)
 
   - Register and sign-in page
   - Choosing product page
