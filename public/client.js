@@ -81,7 +81,7 @@ let product = document.getElementById('product');
 
 let counter = parseInt(document.getElementById('timer').value);
 
-function format(time) {   
+function format(time) {
     // Hours, minutes and seconds
     let hrs = ~~(time / 3600);
     let mins = ~~((time % 3600) / 60);
@@ -136,7 +136,7 @@ socket.on('liveCounter', (data) => {
 // 3ebra
 socket.on('try', data => {
     console.log(data)
-    if (data.lastToken == token || data.lastTokenHouse == token ) {
+    if (data.lastToken == token || data.lastTokenHouse == token) {
         socket.emit('sold', data);
     }
 });
