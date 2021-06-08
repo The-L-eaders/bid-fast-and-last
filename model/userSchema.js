@@ -3,9 +3,9 @@
 require('dotenv').config();
 
 const mongoose = require('mongoose');
-const base64 = require('base-64')
-const JWT = require('jsonwebtoken')
-const SECRET = process.env.SECRET
+const base64 = require('base-64');
+const JWT = require('jsonwebtoken');
+const SECRET = process.env.SECRET || 'BFAL'
 const bcrypt = require('bcrypt');
 const product = require('./productSchema');
 const schema = mongoose.Schema;

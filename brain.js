@@ -14,13 +14,16 @@ const productSchema = require('./model/productSchema.js');
 
 const basicAuth = require('./middleWares/basicAuth.js');
 const Auth = require('./middleWares/bearerAuth');
+const notFoundHandler = require('./middleWares/error-handlers/404.js');
+const errorHandler = require('./middleWares/error-handlers/500.js');
 
 // ....................................................
 app.set('view engine', 'ejs');
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
+
 
 const http = require('http');
 const server = http.createServer(app);
@@ -53,23 +56,18 @@ app.get('/', (req, res) => {
     res.render('homePage', { token: req.cookies.token });
 });
 
-
-
-
 // bidding page --------------------------------------------
 
 
 app.get('/car', Auth, async(req, res) => {
     let data = await productSchema.find({ category: 'car' });
-
-
     data.sort((a, b) => {
         a['createdAt'] - b['createdAt']
     });
 
     if (data[0]) {
         if (data[0].userId == req.user._id) {
-            res.send('You Cant bid in your own Product')
+            res.send('You Cant bid in your own Product');
         } else {
             res.render('biddingPage', { data: data[0] });
         }
@@ -79,16 +77,14 @@ app.get('/car', Auth, async(req, res) => {
 });
 
 app.get('/house', Auth, async(req, res) => {
-
     let dataHouse = await productSchema.find({ category: 'house' });
     console.log(dataHouse)
     dataHouse.sort((a, b) => {
         a['createdAt'] - b['createdAt']
     });
-
     if (dataHouse[0]) {
         if (dataHouse[0].userId == req.user._id) {
-            res.send('You Cant bid in your own Product')
+            res.send('You Cant bid in your own Product');
         } else {
             res.render('biddingPage', { data: dataHouse[0] });
         }
@@ -107,7 +103,6 @@ app.get('/register', (req, res) => {
 app.post('/register', async(req, res) => {
     const { email, password, userName } = req.body;
     let saveToDB = await userSchema({ email, userName, password }).save()
-
     res.render('logIn');
 });
 
@@ -131,7 +126,8 @@ app.post('/logIn', basicAuth, (req, res) => {
 app.get('/logout', (req, res) => {
     res.clearCookie('token')
     res.redirect('/')
-})
+});
+
 app.get('/add', Auth, (req, res) => {
     res.render('addProducts');
 });
@@ -150,8 +146,10 @@ app.post('/add', Auth, async(req, res) => {
     }).save();
     const user = await userSchema.findByIdAndUpdate({ _id: id }, { $push: { product: productSave } });
     res.send(productSave);
-})
+});
 
+app.use(errorHandler);
+app.use('*', notFoundHandler);
 
 // ----------------------------------------------------------------------------------------
 
@@ -172,11 +170,7 @@ let carLastPrice = 0;
 
 
 car.on('connection', socket => {
-
-
-
     socket.on('increasePrice', (data) => {
-
         lastToken = data.token
         carLastPrice = data.lastPrice;
         car.emit('showLatest', { total: data.lastPrice, name: users });
