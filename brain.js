@@ -144,14 +144,15 @@ app.get('/add', Auth, (req, res) => {
 
 app.post('/add', Auth, async(req, res) => {
     const id = req.user._id;
-    let { name, price, description, image, category } = req.body;
+    let { name, price, description, image, category ,timer} = req.body;
     let productSave = await productSchema({
         productName: name,
         startingPrice: price,
         productDis: description,
         productImage: image,
         category: category,
-        userId: id
+        userId: id,
+        timer:timer
     }).save();
     const user = await userSchema.findByIdAndUpdate({ _id: id }, { $push: { product: productSave } });
     res.send(productSave);
@@ -166,13 +167,8 @@ const car = io.of('/car');
 const house = io.of('/house');
 
 let carLast = {};
-
-
-
-
-
-
-let lastToken = ''
+let lastToken = '';
+let carLastPrice =0 ;
 
 
 
@@ -188,6 +184,7 @@ car.on('connection', socket => {
     socket.on('increasePrice', (data) => {
 
         lastToken = data.token
+        carLastPrice=data.lastPrice;
         car.emit('showLatest', { total: data.lastPrice, name: users });
     });
 
@@ -195,16 +192,17 @@ car.on('connection', socket => {
         let getProduct = await productSchema.find({ _id: data.product._id });
         const soldTo = {
             name: getProduct[0].productName,
-            price: carLast.lastPrice,
+            price: carLastPrice,
             image: getProduct[0].productImage,
             description: getProduct[0].productDis
         }
 
         const dbUser = await userSchema.authenticateWithToken(lastToken);
         const user = await userSchema.findByIdAndUpdate({ _id: dbUser._id }, { $push: { cart: soldTo } });
-        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': `sold  price ${carLast.lastPrice} ` } });
+        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': `sold  price ${carLastPrice} ` } });
         let deleted = await productSchema.findByIdAndDelete({ _id: data.product._id })
-        lastToken = ''
+        lastToken = '';
+        carLastPrice=0;
     });
 
     let product = {}
@@ -221,7 +219,8 @@ car.on('connection', socket => {
         let getProduct = await productSchema.find({ _id: product._id });
         let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': 'not sold' } });
         let deleted = await productSchema.findByIdAndDelete({ _id: product._id });
-        lastToken = ''
+        lastToken = '';
+        carLastPrice=0;
     }
 
     socket.on('startBidding', (obj) => {
@@ -237,7 +236,7 @@ car.on('connection', socket => {
                     notSold();
                 }
                 clearInterval(interval);
-                return obj.counter = 0, obj.lastPrice = 0;
+                return obj.counter = 0, obj.lastPrice = 0 ;
             };
             obj.counter = obj.counter - 1;
             car.emit('liveCounter', obj.counter);
@@ -254,7 +253,7 @@ car.on('connection', socket => {
         socket.broadcast.emit('greeting', users);
     });
 
-    car.emit('liveBid', carLast.lastPrice);
+    car.emit('liveBid', carLastPrice);
 });
 
 
@@ -262,23 +261,30 @@ car.on('connection', socket => {
 
 
 
-
+let lastPrice = 0;
 let houseLast = {};
-// let lastTokenHouse = ''
+let lastTokenHouse = ''
 house.on('connection', socket => {
+
+    socket.on('increasePrice', (total) => {
+        lastPrice = total.lastPrice;
+        lastTokenHouse = total.token
+        house.emit('showLatest', { total: total.lastPrice, name: users });
+    });
     socket.on('sold', async(data) => {
         let getProduct = await productSchema.find({ _id: data.product._id });
         const soldTo = {
             name: getProduct[0].productName,
-            price: houseLast.lastPrice,
+            price: lastPrice,
             image: getProduct[0].productImage,
             description: getProduct[0].productDis
         }
-        const dbUser = await userSchema.authenticateWithToken(lastToken);
+        const dbUser = await userSchema.authenticateWithToken(lastTokenHouse);
         const user = await userSchema.findByIdAndUpdate({ _id: dbUser._id }, { $push: { cart: soldTo } });
-        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': `sold  price ${houseLast.lastPrice} ` } });
+        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': `sold  price ${lastPrice} ` } });
         let deleted = await productSchema.findByIdAndDelete({ _id: data.product._id })
-        lastToken = ''
+        lastTokenHouse = ''
+        lastPrice=0 ;
     });
 
     let product = {}
@@ -294,7 +300,8 @@ house.on('connection', socket => {
         let getProduct = await productSchema.find({ _id: product._id });
         let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': 'not sold' } });
         let deleted = await productSchema.findByIdAndDelete({ _id: product._id });
-        lastToken = ''
+        lastTokenHouse = ''
+        lastPrice = 0;
     }
 
 
@@ -304,14 +311,14 @@ house.on('connection', socket => {
         let interval = setInterval(() => {
             if (obj.counter == 0) {
 
-                if (lastToken != '') {
-                    house.emit('try', { product, lastToken });
+                if (lastTokenHouse != '') {
+                    house.emit('try', { product, lastTokenHouse });
                 } else {
 
                     notSold();
                 }
                 clearInterval(interval);
-                return obj.counter = 0, obj.lastPrice = 0;
+                return obj.counter = 0, obj.lastPrice = 0 ;
             };
             obj.counter = obj.counter - 1;
             house.emit('liveCounter', obj.counter);
@@ -327,9 +334,6 @@ house.on('connection', socket => {
         socket.broadcast.emit('greeting', users);
     });
 
-    socket.on('increasePrice', (total) => {
-        lastToken = total.token
-        house.emit('showLatest', { total: total.lastPrice, name: users });
-    });
-    house.emit('liveBid', houseLast.lastPrice);
+    
+    house.emit('liveBid', lastPrice);
 });
