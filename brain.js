@@ -6,10 +6,10 @@ const PORT = process.env.PORT || 3000
 const bcrypt = require('bcrypt');
 
 const express = require('express');
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 const app = express();
 // DataBase ..............................................
-const userSchema = require('./model/userSchema.js')
+const userSchema = require('./model/userSchema.js');
 const productSchema = require('./model/productSchema.js');
 
 const basicAuth = require('./middleWares/basicAuth.js');
@@ -101,9 +101,13 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', async(req, res) => {
-    const { email, password, userName } = req.body;
-    let saveToDB = await userSchema({ email, userName, password }).save()
-    res.render('logIn');
+    try {
+        const { email, password, userName } = req.body;
+        let saveToDB = await userSchema({ email, userName, password }).save()
+        res.render('logIn');
+    } catch (e) {
+        res.send('Email already exists !');
+    }
 });
 
 // Category Page ----------------------------------
@@ -124,8 +128,8 @@ app.post('/logIn', basicAuth, (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-    res.clearCookie('token')
-    res.redirect('/')
+    res.clearCookie('token');
+    res.redirect('/');
 });
 
 app.get('/add', Auth, (req, res) => {
@@ -161,12 +165,6 @@ const house = io.of('/house');
 let carLast = {};
 let lastToken = '';
 let carLastPrice = 0;
-
-
-
-
-
-
 
 
 car.on('connection', socket => {
