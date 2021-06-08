@@ -9,9 +9,9 @@ const ProductSchema = new mongoose.Schema({
     productDis: { type: String, required: true },
     productImage: { type: String, required: true },
     category: { type: String, enum: ['car', 'house'], required: true },
-    status: { type: String , default:"still in progress ." },
+    status: { type: String, default: "still in progress ." },
     userId: { type: String },
-    timer:{type :Number  }
+    timer: { type: Number }
 }, { timestamps: true });
 
 const product = mongoose.model('product', ProductSchema);
