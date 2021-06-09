@@ -31,7 +31,7 @@ const server = http.createServer(app);
 const mongoose = require('mongoose');
 
 
-const MongoDb_URI = process.env.MongoDb_URI
+const MongoDb_URI = process.env.MongoDb_URI || 'mongodb://localhost:27017/test';
 
 const options = {
     useNewUrlParser: true,
@@ -45,9 +45,9 @@ app.use(express.static('./'));
 
 let io = require("socket.io")(server);
 
+server.listen(PORT, () => console.log("listening " + PORT));
 mongoose.connect(MongoDb_URI, options, () => {
     console.log('connected to DB');
-    server.listen(PORT, () => console.log("listening " + PORT));
 });
 
 // Home page -----------------------------------------
@@ -168,6 +168,7 @@ let carLastPrice = 0;
 
 car.on('connection', socket => {
     socket.on('increasePrice', (data) => {
+        console.log('bla bla bla');
         lastToken = data.token
         carLastPrice = data.lastPrice;
         car.emit('showLatest', { total: data.lastPrice, name: users });
@@ -209,6 +210,7 @@ car.on('connection', socket => {
     }
 
     socket.on('startBidding', (obj) => {
+        console.log('haha');
         generateProduct();
         carLast = obj;
 
@@ -322,3 +324,7 @@ house.on('connection', socket => {
 
     house.emit('liveBid', lastPrice);
 });
+
+module.exports = {
+    app: app,
+}

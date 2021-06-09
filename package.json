@@ -32,7 +32,6 @@
         "socket.io-client": "^4.1.2"
     },
     "devDependencies": {
-        "@code-fellows/supergoose": "^1.1.0",
         "jest": "^27.0.4",
         "supertest": "^6.1.3"
     }
