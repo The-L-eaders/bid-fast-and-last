@@ -93,8 +93,6 @@ app.get('/house', Auth, async(req, res) => {
     }
 });
 
-
-
 // register page ------------------------------------------
 app.get('/register', (req, res) => {
     res.render('register');
@@ -155,7 +153,8 @@ app.post('/add', Auth, async(req, res) => {
 app.use(errorHandler);
 app.use('*', notFoundHandler);
 
-// ----------------------------------------------------------------------------------------
+module.exports = app
+    // ----------------------------------------------------------------------------------------
 
 
 
