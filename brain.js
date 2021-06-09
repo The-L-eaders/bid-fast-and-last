@@ -156,40 +156,29 @@ app.use('*', notFoundHandler);
 module.exports = app
     // ----------------------------------------------------------------------------------------
 
-
+const Category = require('./src/category.js')
 
 const car = io.of('/car');
 const house = io.of('/house');
+
 
 let carLast = {};
 let lastToken = '';
 let carLastPrice = 0;
 
-
 car.on('connection', socket => {
+
     socket.on('increasePrice', (data) => {
-        console.log('bla bla bla');
-        lastToken = data.token
-        carLastPrice = data.lastPrice;
-        car.emit('showLatest', { total: data.lastPrice, name: users });
+        let newD = Category.increasePrice(data);
+        lastToken = newD.token
+        carLastPrice = newD.lastPrice;
+        car.emit('showLatest', { total: newD.lastPrice, name: users });
     });
 
-    socket.on('sold', async(data) => {
-        let getProduct = await productSchema.find({ _id: data.product._id });
-        const soldTo = {
-            name: getProduct[0].productName,
-            price: carLastPrice,
-            image: getProduct[0].productImage,
-            description: getProduct[0].productDis
-        }
-
-        const dbUser = await userSchema.authenticateWithToken(lastToken);
-        const user = await userSchema.findByIdAndUpdate({ _id: dbUser._id }, { $push: { cart: soldTo } });
-        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': `sold  price ${carLastPrice} ` } });
-        let deleted = await productSchema.findByIdAndDelete({ _id: data.product._id })
-        lastToken = '';
-        carLastPrice = 0;
+    socket.on('sold', (data) => {
+        Category.sold(data);
     });
+
 
     let product = {}
     async function generateProduct() {
@@ -201,16 +190,7 @@ car.on('connection', socket => {
     }
 
 
-    let notSold = async() => {
-        let getProduct = await productSchema.find({ _id: product._id });
-        let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': 'not sold' } });
-        let deleted = await productSchema.findByIdAndDelete({ _id: product._id });
-        lastToken = '';
-        carLastPrice = 0;
-    }
-
     socket.on('startBidding', (obj) => {
-        console.log('haha');
         generateProduct();
         carLast = obj;
 
@@ -220,7 +200,7 @@ car.on('connection', socket => {
                 if (lastToken != '') {
                     car.emit('try', { product, lastToken });
                 } else {
-                    notSold();
+                    Category.notSold(product);
                 }
                 clearInterval(interval);
                 return obj.counter = 0, obj.lastPrice = 0;
@@ -251,6 +231,7 @@ car.on('connection', socket => {
 let lastPrice = 0;
 let houseLast = {};
 let lastTokenHouse = ''
+
 house.on('connection', socket => {
 
     socket.on('increasePrice', (total) => {
@@ -327,4 +308,7 @@ house.on('connection', socket => {
 
 module.exports = {
     app: app,
+    carLast,
+    lastToken,
+    carLastPrice
 }
