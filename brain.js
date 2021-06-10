@@ -160,6 +160,9 @@ module.exports = app
 
 const car = io.of('/car');
 const house = io.of('/house');
+const home = io.of('/');
+
+
 
 let carLast = {};
 let lastToken = '';
@@ -168,7 +171,6 @@ let carLastPrice = 0;
 
 car.on('connection', socket => {
     socket.on('increasePrice', (data) => {
-        console.log('bla bla bla');
         lastToken = data.token
         carLastPrice = data.lastPrice;
         car.emit('showLatest', { total: data.lastPrice, name: users });
@@ -176,6 +178,7 @@ car.on('connection', socket => {
 
     socket.on('sold', async(data) => {
         let getProduct = await productSchema.find({ _id: data.product._id });
+
         const soldTo = {
             name: getProduct[0].productName,
             price: carLastPrice,
@@ -189,6 +192,8 @@ car.on('connection', socket => {
         let deleted = await productSchema.findByIdAndDelete({ _id: data.product._id })
         lastToken = '';
         carLastPrice = 0;
+
+        home.emit('soldEvent', soldTo);
     });
 
     let product = {}
@@ -210,7 +215,6 @@ car.on('connection', socket => {
     }
 
     socket.on('startBidding', (obj) => {
-        console.log('haha');
         generateProduct();
         carLast = obj;
 
@@ -266,12 +270,15 @@ house.on('connection', socket => {
             image: getProduct[0].productImage,
             description: getProduct[0].productDis
         }
+
         const dbUser = await userSchema.authenticateWithToken(lastTokenHouse);
         const user = await userSchema.findByIdAndUpdate({ _id: dbUser._id }, { $push: { cart: soldTo } });
         let update = await userSchema.updateOne({ '_id': getProduct[0].userId, product: { $elemMatch: { '_id': getProduct[0]._id } } }, { $set: { 'product.$.status': `sold  price ${lastPrice} ` } });
         let deleted = await productSchema.findByIdAndDelete({ _id: data.product._id })
         lastTokenHouse = ''
         lastPrice = 0;
+
+        home.emit('soldEvent', soldTo);
     });
 
     let product = {}
