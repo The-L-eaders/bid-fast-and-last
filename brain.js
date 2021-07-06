@@ -118,7 +118,7 @@ app.get("/logIn", (req, res) => {
 app.post("/logIn", basicAuth, (req, res) => {
   req.token = req.user.token;
   res.cookie("token", req.token);
-  res.json(req.user);
+  res.json({ user: req.user, token: req.token });
   // res.redirect('/');
 });
 
