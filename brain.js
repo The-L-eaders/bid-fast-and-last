@@ -23,9 +23,8 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-const http = require("http", {
-  cors: { origin: "http://localhost:3000", method: ["GET", "POST"] },
-});
+
+const http = require("http");
 const server = http.createServer(app);
 
 const mongoose = require("mongoose");
@@ -41,8 +40,9 @@ const options = {
 
 app.use(express.static("./"));
 
-// require('socket.io')(http, {cors: {origin: "http://locaslhost:3000", method: ["GET", "POST"]}});
-let io = require("socket.io")(server);
+let io = require("socket.io")(server, {
+  origins: ["http://localhost:3000"],
+});
 
 server.listen(PORT, () => console.log("listening " + PORT));
 mongoose.connect(MongoDb_URI, options, () => {
