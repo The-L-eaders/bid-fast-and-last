@@ -1,8 +1,8 @@
 'use strict'
 
-let pathName = window.location.pathname;
+// let pathName = window.location.pathname;
 
-const socket = io(pathName);
+// const socket = io(pathName);
 let text = '';
 let token = document.cookie.split('=').pop();
 socket.emit('newUser', { token });
