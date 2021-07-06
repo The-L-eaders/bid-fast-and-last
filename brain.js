@@ -41,7 +41,18 @@ const options = {
 app.use(express.static("./"));
 
 let io = require("socket.io")(server, {
-  origins: ["http://localhost:3000"],
+  cors: {
+    origins: ["*"],
+
+    handlePreflightRequest: (req, res) => {
+      res.writeHead(200, {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST,GET",
+        "Access-Control-Allow-Credentials": true,
+      });
+      res.end();
+    },
+  },
 });
 
 server.listen(PORT, () => console.log("listening " + PORT));
