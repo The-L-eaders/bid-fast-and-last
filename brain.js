@@ -355,7 +355,7 @@ house.on("connection", (socket) => {
     });
     product = getProd[0];
   }
-  let sold = async ()=>{
+  let sold = async (data)=>{
         let getProduct = await productSchema.find({ _id: data.product._id });
     const soldTo = {
       name: getProduct[0].productName,
