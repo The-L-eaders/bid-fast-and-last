@@ -119,7 +119,16 @@ app.post("/register", async (req, res) => {
 
 // Category Page ----------------------------------
 app.get("/category", Auth, (req, res) => {
-  res.render("category");
+  res.json([
+    {
+      id : 1,
+      name : "car"
+    },
+    {
+      id : 2,
+      name : "house"
+    }
+  ]);
 });
 
 // logIn page ------------------------------

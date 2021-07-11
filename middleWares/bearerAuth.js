@@ -13,6 +13,7 @@ module.exports = async (req, res, next) => {
         req.token = validUser.token;
         next();
     } catch (e) {
-        next('Unauthorized !');
+        res.status(401);
+        res.send('Unauthorized !');
     }
 }
