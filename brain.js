@@ -287,10 +287,10 @@ car.on("connection", (socket) => {
     lastToken = "";
     carLastPrice = 0;
   };
-   if(flag){
-
-     socket.on("startBidding", (obj) => {
-       flag=false
+  
+  socket.on("startBidding", (obj) => {
+    if(flag){
+    flag=false
        generateProduct();
        carLast = obj;
    
@@ -310,8 +310,8 @@ car.on("connection", (socket) => {
          obj.counter = obj.counter - 1;
          car.emit("liveCounter", obj.counter);
        }, 1000);
+      }
      });
-   }
 
   let users = "";
   let userSold = {};
