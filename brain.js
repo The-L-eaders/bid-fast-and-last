@@ -2,7 +2,7 @@
 require("dotenv").config();
 
 const cors = require("cors");
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 const bcrypt = require("bcrypt");
 
 const express = require("express");
@@ -196,6 +196,7 @@ let flag=true
 
 car.on("connection", (socket) => {
   socket.on("increasePrice", (data) => {
+    console.log('increeeeeee')
     lastToken = data.token;
     carLastPrice = data.lastPrice;
     car.emit("showLatest", { total: data.lastPrice, name: users });
