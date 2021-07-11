@@ -2,7 +2,7 @@
 require("dotenv").config();
 
 const cors = require("cors");
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 const bcrypt = require("bcrypt");
 
 const express = require("express");
@@ -196,7 +196,6 @@ let flag=true
 
 car.on("connection", (socket) => {
   socket.on("increasePrice", (data) => {
-    console.log('increeeeeee')
     lastToken = data.token;
     carLastPrice = data.lastPrice;
     car.emit("showLatest", { total: data.lastPrice, name: users });
@@ -332,6 +331,7 @@ car.on("connection", (socket) => {
 let lastPrice = 0;
 let houseLast = {};
 let lastTokenHouse = "";
+let houseFlag=true
 house.on("connection", (socket) => {
   socket.on("increasePrice", (total) => {
     lastPrice = total.lastPrice;
@@ -421,22 +421,27 @@ house.on("connection", (socket) => {
   };
 
   socket.on("startBidding", (obj) => {
-    generateProduct();
-    houseLast = obj;
-    let interval = setInterval(() => {
-      if (obj.counter == 0) {
-        if (lastTokenHouse != "") {
-          sold({ product, lastTokenHouse });
-          // house.emit("try", { product, lastTokenHouse });
-        } else {
-          notSold();
+    if(houseFlag){
+      houseFlag=false
+      generateProduct();
+      houseLast = obj;
+      let interval = setInterval(() => {
+        if (obj.counter == 0) {
+          if (lastTokenHouse != "") {
+            sold({ product, lastTokenHouse });
+            // house.emit("try", { product, lastTokenHouse });
+            houseFlag=true
+          } else {
+            notSold();
+            houseFlag=true
+          }
+          clearInterval(interval);
+          return (obj.counter = 0), (obj.lastPrice = 0);
         }
-        clearInterval(interval);
-        return (obj.counter = 0), (obj.lastPrice = 0);
-      }
-      obj.counter = obj.counter - 1;
-      house.emit("liveCounter", obj.counter);
-    }, 1000);
+        obj.counter = obj.counter - 1;
+        house.emit("liveCounter", obj.counter);
+      }, 1000);
+    }
   });
 
   let users = "";
