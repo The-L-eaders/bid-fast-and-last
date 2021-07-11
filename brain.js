@@ -174,7 +174,8 @@ app.post("/add", Auth, async (req, res) => {
 });
 
 app.post("/getUser", async (req, res) => {
-  const user = await userSchema.authenticateWithToken(req.body);
+  let token = req.body.token
+  const user = await userSchema.authenticateWithToken(token);
   res.json(user);
 });
 
