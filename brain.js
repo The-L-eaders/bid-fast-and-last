@@ -192,7 +192,7 @@ const home = io.of("/");
 let carLast = {};
 let lastToken = "";
 let carLastPrice = 0;
-let falg=true
+let flag=true
 
 car.on("connection", (socket) => {
   socket.on("increasePrice", (data) => {
