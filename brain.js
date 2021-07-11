@@ -121,12 +121,12 @@ app.post("/register", async (req, res) => {
 app.get("/category", Auth, (req, res) => {
   res.json([
     {
-      id : 1,
-      name : "car"
+      id: 1,
+      name: "car"
     },
     {
-      id : 2,
-      name : "house"
+      id: 2,
+      name: "house"
     }
   ]);
 });
@@ -237,7 +237,7 @@ car.on("connection", (socket) => {
    * 
    * @param {Object} data 
    */
-   let sold = async (data)=>{
+  let sold = async (data) => {
     let getProduct = await productSchema.find({ _id: data.product._id });
 
     const soldTo = {
@@ -281,25 +281,30 @@ car.on("connection", (socket) => {
     carLastPrice = 0;
   };
 
-  socket.on("startBidding", (obj) => {
-    generateProduct();
-    carLast = obj;
-
-    let interval = setInterval(() => {
-      if (obj.counter == 0) {
-        if (lastToken != "") {
-          // car.emit("try", { product, lastToken });
-          sold({product, lastToken});
-        } else {
-          notSold();
+  let flag = true;
+  if (flag) {
+    socket.on("startBidding", (obj) => {
+      flag = false;
+      generateProduct();
+      carLast = obj;
+      let interval = setInterval(() => {
+        if (obj.counter == 0) {
+          if (lastToken != "") {
+            // car.emit("try", { product, lastToken });
+            sold({ product, lastToken });
+            flag = true;
+          } else {
+            notSold();
+            flag = true;
+          }
+          clearInterval(interval);
+          return (obj.counter = 0), (obj.lastPrice = 0);
         }
-        clearInterval(interval);
-        return (obj.counter = 0), (obj.lastPrice = 0);
-      }
-      obj.counter = obj.counter - 1;
-      car.emit("liveCounter", obj.counter);
-    }, 1000);
-  });
+        obj.counter = obj.counter - 1;
+        car.emit("liveCounter", obj.counter);
+      }, 1000);
+    });
+  }
 
   let users = "";
   let userSold = {};
@@ -325,7 +330,7 @@ house.on("connection", (socket) => {
     lastTokenHouse = total.token;
     house.emit("showLatest", { total: total.lastPrice, name: users });
   });
-  
+
   socket.on("sold", async (data) => {
     let getProduct = await productSchema.find({ _id: data.product._id });
     const soldTo = {
@@ -364,8 +369,8 @@ house.on("connection", (socket) => {
     });
     product = getProd[0];
   }
-  let sold = async (data)=>{
-        let getProduct = await productSchema.find({ _id: data.product._id });
+  let sold = async (data) => {
+    let getProduct = await productSchema.find({ _id: data.product._id });
     const soldTo = {
       name: getProduct[0].productName,
       price: lastPrice,
