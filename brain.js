@@ -192,6 +192,7 @@ const home = io.of("/");
 let carLast = {};
 let lastToken = "";
 let carLastPrice = 0;
+let falg=true
 
 car.on("connection", (socket) => {
   socket.on("increasePrice", (data) => {
@@ -286,26 +287,31 @@ car.on("connection", (socket) => {
     lastToken = "";
     carLastPrice = 0;
   };
+   if(flag){
 
-  socket.on("startBidding", (obj) => {
-    generateProduct();
-    carLast = obj;
-
-    let interval = setInterval(() => {
-      if (obj.counter == 0) {
-        if (lastToken != "") {
-          // car.emit("try", { product, lastToken });
-          sold({ product, lastToken });
-        } else {
-          notSold();
-        }
-        clearInterval(interval);
-        return (obj.counter = 0), (obj.lastPrice = 0);
-      }
-      obj.counter = obj.counter - 1;
-      car.emit("liveCounter", obj.counter);
-    }, 1000);
-  });
+     socket.on("startBidding", (obj) => {
+       flag=false
+       generateProduct();
+       carLast = obj;
+   
+       let interval = setInterval(() => {
+         if (obj.counter == 0) {
+           if (lastToken != "") {
+             // car.emit("try", { product, lastToken });
+             sold({ product, lastToken });
+             flag=true
+           } else {
+             notSold();
+             flag=true
+           }
+           clearInterval(interval);
+           return (obj.counter = 0), (obj.lastPrice = 0);
+         }
+         obj.counter = obj.counter - 1;
+         car.emit("liveCounter", obj.counter);
+       }, 1000);
+     });
+   }
 
   let users = "";
   let userSold = {};
