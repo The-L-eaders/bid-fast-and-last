@@ -121,13 +121,13 @@ app.post("/register", async (req, res) => {
 app.get("/category", Auth, (req, res) => {
   res.json([
     {
-      id : 1,
-      name : "car"
+      id: 1,
+      name: "car",
     },
     {
-      id : 2,
-      name : "house"
-    }
+      id: 2,
+      name: "house",
+    },
   ]);
 });
 
@@ -171,6 +171,11 @@ app.post("/add", Auth, async (req, res) => {
     { $push: { product: productSave } }
   );
   res.json(productSave);
+});
+
+app.post("/getUser", async (req, res) => {
+  const user = await userSchema.authenticateWithToken(req.body);
+  res.json(user);
 });
 
 app.use(errorHandler);
@@ -234,10 +239,10 @@ car.on("connection", (socket) => {
     product = getProd[0];
   }
   /**
-   * 
-   * @param {Object} data 
+   *
+   * @param {Object} data
    */
-   let sold = async (data)=>{
+  let sold = async (data) => {
     let getProduct = await productSchema.find({ _id: data.product._id });
 
     const soldTo = {
@@ -266,7 +271,7 @@ car.on("connection", (socket) => {
     carLastPrice = 0;
 
     home.emit("soldEvent", soldTo);
-  }
+  };
   let notSold = async () => {
     let getProduct = await productSchema.find({ _id: product._id });
     let update = await userSchema.updateOne(
@@ -289,7 +294,7 @@ car.on("connection", (socket) => {
       if (obj.counter == 0) {
         if (lastToken != "") {
           // car.emit("try", { product, lastToken });
-          sold({product, lastToken});
+          sold({ product, lastToken });
         } else {
           notSold();
         }
@@ -325,7 +330,7 @@ house.on("connection", (socket) => {
     lastTokenHouse = total.token;
     house.emit("showLatest", { total: total.lastPrice, name: users });
   });
-  
+
   socket.on("sold", async (data) => {
     let getProduct = await productSchema.find({ _id: data.product._id });
     const soldTo = {
@@ -364,8 +369,8 @@ house.on("connection", (socket) => {
     });
     product = getProd[0];
   }
-  let sold = async (data)=>{
-        let getProduct = await productSchema.find({ _id: data.product._id });
+  let sold = async (data) => {
+    let getProduct = await productSchema.find({ _id: data.product._id });
     const soldTo = {
       name: getProduct[0].productName,
       price: lastPrice,
@@ -392,7 +397,7 @@ house.on("connection", (socket) => {
     lastPrice = 0;
 
     home.emit("soldEvent", soldTo);
-  }
+  };
   let notSold = async () => {
     let getProduct = await productSchema.find({ _id: product._id });
     let update = await userSchema.updateOne(
@@ -413,7 +418,7 @@ house.on("connection", (socket) => {
     let interval = setInterval(() => {
       if (obj.counter == 0) {
         if (lastTokenHouse != "") {
-          sold({ product, lastTokenHouse })
+          sold({ product, lastTokenHouse });
           // house.emit("try", { product, lastTokenHouse });
         } else {
           notSold();
