@@ -272,6 +272,7 @@ car.on("connection", (socket) => {
     });
     lastToken = "";
     carLastPrice = 0;
+    carUsers=[];
 
     home.emit("soldEvent", soldTo);
   };
@@ -287,6 +288,7 @@ car.on("connection", (socket) => {
     let deleted = await productSchema.findByIdAndDelete({ _id: product._id });
     lastToken = "";
     carLastPrice = 0;
+    carUsers=[]
   };
   
   socket.on("startBidding", (obj) => {
@@ -318,7 +320,10 @@ car.on("connection", (socket) => {
   let userSold = {};
   socket.on("newUser", async (data) => {
     const validUser = await userSchema.authenticateWithToken(data.token);
-    carUsers.push(validUser.userName)
+    if(!(carUsers.includes(validUser.userName))  ){
+
+      carUsers.push(validUser.userName)
+    }
     users = validUser.userName;
     userSold = validUser;
     socket.emit('users',carUsers)
