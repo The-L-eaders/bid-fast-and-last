@@ -193,6 +193,7 @@ let carLast = {};
 let lastToken = "";
 let carLastPrice = 0;
 let flag=true
+let carUsers=[]
 
 car.on("connection", (socket) => {
   socket.on("increasePrice", (data) => {
@@ -317,8 +318,10 @@ car.on("connection", (socket) => {
   let userSold = {};
   socket.on("newUser", async (data) => {
     const validUser = await userSchema.authenticateWithToken(data.token);
+    carUsers.push(validUser.userName)
     users = validUser.userName;
     userSold = validUser;
+    socket.emit('users',carUsers)
     socket.broadcast.emit("greeting", users);
   });
 
