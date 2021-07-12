@@ -198,7 +198,7 @@ car.on("connection", (socket) => {
   socket.on("increasePrice", (data) => {
     lastToken = data.token;
     carLastPrice = data.lastPrice;
-    car.emit("showLatest", { total: data.lastPrice, name: users });
+    car.emit("showLatest", { total: data.lastPrice, name: data.userName });
   });
 
   socket.on("sold", async (data) => {
