@@ -192,12 +192,13 @@ const home = io.of("/");
 let carLast = {};
 let lastToken = "";
 let carLastPrice = 0;
+let flag=true
 
 car.on("connection", (socket) => {
   socket.on("increasePrice", (data) => {
     lastToken = data.token;
     carLastPrice = data.lastPrice;
-    car.emit("showLatest", { total: data.lastPrice, name: users });
+    car.emit("showLatest", { total: data.lastPrice, name: data.userName });
   });
 
   socket.on("sold", async (data) => {
@@ -286,26 +287,31 @@ car.on("connection", (socket) => {
     lastToken = "";
     carLastPrice = 0;
   };
-
+  
   socket.on("startBidding", (obj) => {
-    generateProduct();
-    carLast = obj;
-
-    let interval = setInterval(() => {
-      if (obj.counter == 0) {
-        if (lastToken != "") {
-          // car.emit("try", { product, lastToken });
-          sold({ product, lastToken });
-        } else {
-          notSold();
-        }
-        clearInterval(interval);
-        return (obj.counter = 0), (obj.lastPrice = 0);
+    if(flag){
+    flag=false
+       generateProduct();
+       carLast = obj;
+   
+       let interval = setInterval(() => {
+         if (obj.counter == 0) {
+           if (lastToken != "") {
+             // car.emit("try", { product, lastToken });
+             sold({ product, lastToken });
+             flag=true
+           } else {
+             notSold();
+             flag=true
+           }
+           clearInterval(interval);
+           return (obj.counter = 0), (obj.lastPrice = 0);
+         }
+         obj.counter = obj.counter - 1;
+         car.emit("liveCounter", obj.counter);
+       }, 1000);
       }
-      obj.counter = obj.counter - 1;
-      car.emit("liveCounter", obj.counter);
-    }, 1000);
-  });
+     });
 
   let users = "";
   let userSold = {};
@@ -325,6 +331,7 @@ car.on("connection", (socket) => {
 let lastPrice = 0;
 let houseLast = {};
 let lastTokenHouse = "";
+let houseFlag=true
 house.on("connection", (socket) => {
   socket.on("increasePrice", (total) => {
     lastPrice = total.lastPrice;
@@ -414,22 +421,27 @@ house.on("connection", (socket) => {
   };
 
   socket.on("startBidding", (obj) => {
-    generateProduct();
-    houseLast = obj;
-    let interval = setInterval(() => {
-      if (obj.counter == 0) {
-        if (lastTokenHouse != "") {
-          sold({ product, lastTokenHouse });
-          // house.emit("try", { product, lastTokenHouse });
-        } else {
-          notSold();
+    if(houseFlag){
+      houseFlag=false
+      generateProduct();
+      houseLast = obj;
+      let interval = setInterval(() => {
+        if (obj.counter == 0) {
+          if (lastTokenHouse != "") {
+            sold({ product, lastTokenHouse });
+            // house.emit("try", { product, lastTokenHouse });
+            houseFlag=true
+          } else {
+            notSold();
+            houseFlag=true
+          }
+          clearInterval(interval);
+          return (obj.counter = 0), (obj.lastPrice = 0);
         }
-        clearInterval(interval);
-        return (obj.counter = 0), (obj.lastPrice = 0);
-      }
-      obj.counter = obj.counter - 1;
-      house.emit("liveCounter", obj.counter);
-    }, 1000);
+        obj.counter = obj.counter - 1;
+        house.emit("liveCounter", obj.counter);
+      }, 1000);
+    }
   });
 
   let users = "";
