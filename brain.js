@@ -327,9 +327,12 @@ car.on("connection", (socket) => {
     const validUser = await userSchema.authenticateWithToken(data.token);
    const userObj= {userName:validUser.userName, id:socketId}
    let ifUser= false
-   for(let i =0 ; i<carUsers.length;i++){
-     if(carUsers[i].id===userObj.id){
-       ifUser= true
+   if(carUsers.length>0){
+
+     for(let i =0 ; i<carUsers.length;i++){
+       if(carUsers[i].id===userObj.id){
+         ifUser= true
+       }
      }
    }
   // const caaar = carUsers.reduce((acc,item)=>{
@@ -352,6 +355,7 @@ car.on("connection", (socket) => {
 car.on('disconnect',()=>{
   carUsers.filter(user=>user.id!==socket.id)
   socket.broadcast.emit('nihad',{payload:carUsers})
+  socket.emit('hi','hiiiii')
 })
 
 /**
