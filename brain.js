@@ -201,10 +201,8 @@ let carUsers=[]
 car.on("connection", (socket) => {
   const socketId=socket.id
   socket.on('disconnect',()=>{
-    
     carUsers=carUsers.filter(user=>user.id!==socket.id)
     car.emit('nihad',{payload:carUsers})
-    car.emit('hi',socket.id)
   })
   
   
@@ -334,13 +332,13 @@ car.on("connection", (socket) => {
     const validUser = await userSchema.authenticateWithToken(data.token);
    const userObj= {userName:validUser.userName, id:socketId}
    let ifUser= false
-   if(carUsers.length>0){
+  
      for(let i =0 ; i<carUsers.length;i++){
        if(carUsers[i].userName===userObj.userName){
          ifUser= true
        }
      }
-   }
+ 
  
     if(!ifUser){
       carUsers.push(userObj)
@@ -353,11 +351,7 @@ car.on("connection", (socket) => {
 
   car.emit("liveBid", carLastPrice);
 });
-// car.on('disconnect',()=>{
-//   carUsers.filter(user=>user.id!==socket.id)
-//   socket.broadcast.emit('nihad',{payload:carUsers})
-//   socket.emit('hi','hiiiii')
-// })
+
 
 /**
  * House
@@ -368,6 +362,12 @@ let lastTokenHouse = "";
 let houseFlag=true
 let houseUsers=[];
 house.on("connection", (socket) => {
+  const socketId=socket.id
+  socket.on('disconnect',()=>{
+    houseUsers=houseUsers.filter(user=>user.id!==socket.id)
+    house.emit('nihad',{payload:houseUsers})
+  })
+
   socket.on("increasePrice", (total) => {
     lastPrice = total.lastPrice;
     lastTokenHouse = total.token;
@@ -487,11 +487,21 @@ house.on("connection", (socket) => {
     const validUser = await userSchema.authenticateWithToken(data.token);
     users = validUser.userName;
     userSold = validUser;
-    if(!(houseUsers.includes(validUser.userName))  ){
-      houseUsers.push(validUser.userName)
+    const userObj= {userName:validUser.userName, id:socketId}
+    let ifUser= false
+  
+     for(let i =0 ; i<houseUsers.length;i++){
+       if(houseUsers[i].userName===userObj.userName){
+         ifUser= true
+       }
+     }
+  
+ 
+    if(!ifUser){
+      houseUsers.push(userObj)
     }
-    socket.broadcast.emit('nihad',{payload:houseUsers})
-    socket.broadcast.emit("greeting", users);
+    house.emit('nihad',{payload:houseUsers})
+    house.emit("greeting", users);
   });
 
   house.emit("liveBid", lastPrice);
