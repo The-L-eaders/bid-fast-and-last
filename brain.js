@@ -196,6 +196,7 @@ let flag=true
 let carUsers=[]
 
 car.on("connection", (socket) => {
+  
   socket.on("increasePrice", (data) => {
     lastToken = data.token;
     carLastPrice = data.lastPrice;
@@ -326,7 +327,7 @@ car.on("connection", (socket) => {
     }
     users = validUser.userName;
     userSold = validUser;
-    socket.emit('users',carUsers)
+    socket.emit('nihad',carUsers)
     socket.broadcast.emit("greeting", users);
   });
 
