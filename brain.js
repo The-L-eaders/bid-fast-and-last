@@ -203,8 +203,8 @@ car.on("connection", (socket) => {
   socket.on('disconnect',()=>{
     
     carUsers=carUsers.filter(user=>user.id!==socket.id)
-    car.broadcast.emit('nihad',{payload:carUsers})
-    car.broadcast.emit('hi',socket.id)
+    car.emit('nihad',{payload:carUsers})
+    car.emit('hi',socket.id)
   })
   
   
@@ -347,8 +347,8 @@ car.on("connection", (socket) => {
     }
     users = validUser.userName;
     userSold = validUser;
-    car.broadcast.emit('nihad',{payload:carUsers})
-    car.broadcast.emit("greeting", users);
+    car.emit('nihad',{payload:carUsers})
+    car.emit("greeting", users);
   });
 
   car.emit("liveBid", carLastPrice);
