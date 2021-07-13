@@ -199,6 +199,11 @@ let carUsers=[]
 
 car.on("connection", (socket) => {
   const socketId=socket.id
+  socket.on('disconnect',()=>{
+    carUsers.filter(user=>user.id!==socket.id)
+    socket.broadcast.emit('nihad',{payload:carUsers})
+    socket.emit('hi','hiiiii')
+  })
   
   
   socket.on("increasePrice", (data) => {
@@ -351,11 +356,11 @@ car.on("connection", (socket) => {
 
   car.emit("liveBid", carLastPrice);
 });
-car.on('disconnect',()=>{
-  carUsers.filter(user=>user.id!==socket.id)
-  socket.broadcast.emit('nihad',{payload:carUsers})
-  socket.emit('hi','hiiiii')
-})
+// car.on('disconnect',()=>{
+//   carUsers.filter(user=>user.id!==socket.id)
+//   socket.broadcast.emit('nihad',{payload:carUsers})
+//   socket.emit('hi','hiiiii')
+// })
 
 /**
  * House
