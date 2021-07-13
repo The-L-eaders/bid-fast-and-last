@@ -200,7 +200,7 @@ let carUsers=[]
 
 car.on("connection", (socket) => {
   const socketId=socket.id
-  Socket.on('disconnect',()=>{
+  socket.on('disconnect',()=>{
     
     carUsers=carUsers.filter(user=>user.id!==socket.id)
     car.broadcast.emit('nihad',{payload:carUsers})
