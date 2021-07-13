@@ -28,6 +28,7 @@ const http = require("http");
 const server = http.createServer(app);
 
 const mongoose = require("mongoose");
+const { Socket } = require("dgram");
 
 const MongoDb_URI = process.env.MongoDb_URI || "mongodb://localhost:27017/test";
 
@@ -123,10 +124,12 @@ app.get("/category", Auth, (req, res) => {
     {
       id: 1,
       name: "car",
+      img:'https://source.unsplash.com/400x400/?car'
     },
     {
       id: 2,
       name: "house",
+      img:'https://source.unsplash.com/400x400/?house'
     },
   ]);
 });
@@ -196,6 +199,12 @@ let flag=true
 let carUsers=[]
 
 car.on("connection", (socket) => {
+  const socketId=socket.id
+  socket.on('disconnect',()=>{
+    carUsers=carUsers.filter(user=>user.id!==socket.id)
+    car.emit('nihad',{payload:carUsers})
+  })
+  
   
   socket.on("increasePrice", (data) => {
     lastToken = data.token;
@@ -321,18 +330,28 @@ car.on("connection", (socket) => {
   let userSold = {};
   socket.on("newUser", async (data) => {
     const validUser = await userSchema.authenticateWithToken(data.token);
-    if(!(carUsers.includes(validUser.userName))  ){
-
-      carUsers.push(validUser.userName)
+   const userObj= {userName:validUser.userName, id:socketId}
+   let ifUser= false
+  
+     for(let i =0 ; i<carUsers.length;i++){
+       if(carUsers[i].userName===userObj.userName){
+         ifUser= true
+       }
+     }
+ 
+ 
+    if(!ifUser){
+      carUsers.push(userObj)
     }
     users = validUser.userName;
     userSold = validUser;
-    socket.broadcast.emit('nihad',{payload:carUsers})
-    socket.broadcast.emit("greeting", users);
+    car.emit('nihad',{payload:carUsers})
+    car.emit("greeting", users);
   });
 
   car.emit("liveBid", carLastPrice);
 });
+
 
 /**
  * House
@@ -343,10 +362,16 @@ let lastTokenHouse = "";
 let houseFlag=true
 let houseUsers=[];
 house.on("connection", (socket) => {
+  const socketId=socket.id
+  socket.on('disconnect',()=>{
+    houseUsers=houseUsers.filter(user=>user.id!==socket.id)
+    house.emit('nihad',{payload:houseUsers})
+  })
+
   socket.on("increasePrice", (total) => {
     lastPrice = total.lastPrice;
     lastTokenHouse = total.token;
-    house.emit("showLatest", { total: total.lastPrice, name: users });
+    house.emit("showLatest", { total: total.lastPrice, name: total.userName });
   });
 
   socket.on("sold", async (data) => {
@@ -462,11 +487,21 @@ house.on("connection", (socket) => {
     const validUser = await userSchema.authenticateWithToken(data.token);
     users = validUser.userName;
     userSold = validUser;
-    if(!(houseUsers.includes(validUser.userName))  ){
-      houseUsers.push(validUser.userName)
+    const userObj= {userName:validUser.userName, id:socketId}
+    let ifUser= false
+  
+     for(let i =0 ; i<houseUsers.length;i++){
+       if(houseUsers[i].userName===userObj.userName){
+         ifUser= true
+       }
+     }
+  
+ 
+    if(!ifUser){
+      houseUsers.push(userObj)
     }
-    socket.broadcast.emit('nihad',{payload:houseUsers})
-    socket.broadcast.emit("greeting", users);
+    house.emit('nihad',{payload:houseUsers})
+    house.emit("greeting", users);
   });
 
   house.emit("liveBid", lastPrice);
