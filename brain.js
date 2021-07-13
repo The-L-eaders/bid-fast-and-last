@@ -371,7 +371,7 @@ house.on("connection", (socket) => {
   socket.on("increasePrice", (total) => {
     lastPrice = total.lastPrice;
     lastTokenHouse = total.token;
-    house.emit("showLatest", { total: total.lastPrice, name: users });
+    house.emit("showLatest", { total: total.lastPrice, name: total.userName });
   });
 
   socket.on("sold", async (data) => {
