@@ -347,8 +347,8 @@ car.on("connection", (socket) => {
     }
     users = validUser.userName;
     userSold = validUser;
-    socket.broadcast.emit('nihad',{payload:carUsers})
-    socket.broadcast.emit("greeting", users);
+    car.broadcast.emit('nihad',{payload:carUsers})
+    car.broadcast.emit("greeting", users);
   });
 
   car.emit("liveBid", carLastPrice);
@@ -490,8 +490,8 @@ house.on("connection", (socket) => {
     if(!(houseUsers.includes(validUser.userName))  ){
       houseUsers.push(validUser.userName)
     }
-    car.broadcast.emit('nihad',{payload:houseUsers})
-    car.broadcast.emit("greeting", users);
+    socket.broadcast.emit('nihad',{payload:houseUsers})
+    socket.broadcast.emit("greeting", users);
   });
 
   house.emit("liveBid", lastPrice);
