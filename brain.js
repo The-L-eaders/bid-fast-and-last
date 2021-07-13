@@ -102,7 +102,7 @@ app.get("/house", Auth, async (req, res) => {
   }
 });
 
-app.get("products",async(req,res)=>{
+app.get("/products",async(req,res)=>{
   let allProducts= await productSchema.find({})
   res.json(allProducts)
 })
