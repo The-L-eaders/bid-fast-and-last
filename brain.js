@@ -329,7 +329,7 @@ car.on("connection", (socket) => {
    let ifUser= false
    if(carUsers.length>0){
      for(let i =0 ; i<carUsers.length;i++){
-       if(carUsers[i].id===userObj.id){
+       if(carUsers[i].userName===userObj.userName){
          ifUser= true
        }
      }
