@@ -338,7 +338,7 @@ car.on("connection", (socket) => {
   //   }
   //   return acc
   // },[])
-    if(!ifUser)  ){
+    if(!ifUser){
       carUsers.push(userObj)
     }
     users = validUser.userName;
