@@ -341,6 +341,7 @@ let lastPrice = 0;
 let houseLast = {};
 let lastTokenHouse = "";
 let houseFlag=true
+let houseUsers=[];
 house.on("connection", (socket) => {
   socket.on("increasePrice", (total) => {
     lastPrice = total.lastPrice;
@@ -412,6 +413,7 @@ house.on("connection", (socket) => {
     });
     lastTokenHouse = "";
     lastPrice = 0;
+    houseUsers=[]
 
     home.emit("soldEvent", soldTo);
   };
@@ -427,6 +429,7 @@ house.on("connection", (socket) => {
     let deleted = await productSchema.findByIdAndDelete({ _id: product._id });
     lastTokenHouse = "";
     lastPrice = 0;
+    houseUsers=[];
   };
 
   socket.on("startBidding", (obj) => {
@@ -459,6 +462,10 @@ house.on("connection", (socket) => {
     const validUser = await userSchema.authenticateWithToken(data.token);
     users = validUser.userName;
     userSold = validUser;
+    if(!(houseUsers.includes(validUser.userName))  ){
+      houseUsers.push(validUser.userName)
+    }
+    socket.broadcast.emit('nihad',{payload:houseUsers})
     socket.broadcast.emit("greeting", users);
   });
 
