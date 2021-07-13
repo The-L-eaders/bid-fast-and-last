@@ -326,21 +326,21 @@ car.on("connection", (socket) => {
   socket.on("newUser", async (data) => {
     const validUser = await userSchema.authenticateWithToken(data.token);
    const userObj= {userName:validUser.userName, id:socketId}
-  //  for(let i =0 ; i<carUsers.length;i++){
-  //    if(carUsers[i].id===userObj.id){
-
-  //    }
-
-  //  }
-  const caaar = carUsers.reduce((acc,item)=>{
-   if(item.id !== userObj.id){
-     acc.push(userObj)
+   let ifUser= false
+   for(let i =0 ; i<carUsers.length;i++){
+     if(carUsers[i].id===userObj.id){
+       ifUser= true
+     }
+   }
+  // const caaar = carUsers.reduce((acc,item)=>{
+  //  if(item.id !== userObj.id){
+  //    acc.push(userObj)
+  //   }
+  //   return acc
+  // },[])
+    if(!ifUser)  ){
+      carUsers.push(userObj)
     }
-    return acc
-  },[])
-    // if(!(carUsers.includes(userObj.userName))  ){
-    //   carUsers.push(userObj)
-    // }
     users = validUser.userName;
     userSold = validUser;
     socket.broadcast.emit('nihad',{payload:caaar})
