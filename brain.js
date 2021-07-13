@@ -102,6 +102,11 @@ app.get("/house", Auth, async (req, res) => {
   }
 });
 
+app.get("products",async(req,res)=>{
+  let allProducts= await productSchema.find({})
+  res.json(allProducts)
+})
+
 // register page ------------------------------------------
 app.get("/register", (req, res) => {
   res.render("register");
