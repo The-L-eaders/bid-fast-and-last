@@ -327,8 +327,8 @@ car.on("connection", (socket) => {
     }
     users = validUser.userName;
     userSold = validUser;
-    socket.emit('nihad',carUsers)
-    // socket.broadcast.emit("greeting", users);
+    socket.emit('nihad',{payload:carUsers})
+    socket.broadcast.emit("greeting", users);
   });
 
   car.emit("liveBid", carLastPrice);
