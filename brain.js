@@ -328,7 +328,6 @@ car.on("connection", (socket) => {
    const userObj= {userName:validUser.userName, id:socketId}
    let ifUser= false
    if(carUsers.length>0){
-
      for(let i =0 ; i<carUsers.length;i++){
        if(carUsers[i].id===userObj.id){
          ifUser= true
@@ -346,7 +345,7 @@ car.on("connection", (socket) => {
     }
     users = validUser.userName;
     userSold = validUser;
-    socket.broadcast.emit('nihad',{payload:caaar})
+    socket.broadcast.emit('nihad',{payload:carUsers})
     socket.broadcast.emit("greeting", users);
   });
 
