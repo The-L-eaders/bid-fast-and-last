@@ -196,6 +196,12 @@ let flag=true
 let carUsers=[]
 
 car.on("connection", (socket) => {
+  const socketId=socket.id
+  socket.on('disconnect',()=>{
+    carUsers.filter(user=>user.id!==socket.id)
+    socket.emit('nihad',{payload:carUsers})
+
+  })
   
   socket.on("increasePrice", (data) => {
     lastToken = data.token;
@@ -321,10 +327,10 @@ car.on("connection", (socket) => {
   let userSold = {};
   socket.on("newUser", async (data) => {
     const validUser = await userSchema.authenticateWithToken(data.token);
-    if(!(carUsers.includes(validUser.userName))  ){
-
-      carUsers.push(validUser.userName)
-    }
+   const userObj= {userName:validUser.userName, id:socketId}
+    // if(!(carUsers.includes(userObj.id))  ){
+      carUsers.push(userObj)
+    // }
     users = validUser.userName;
     userSold = validUser;
     socket.broadcast.emit('nihad',{payload:carUsers})
