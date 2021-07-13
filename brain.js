@@ -202,7 +202,7 @@ car.on("connection", (socket) => {
   socket.on('disconnect',()=>{
     carUsers.filter(user=>user.id!==socket.id)
     socket.broadcast.emit('nihad',{payload:carUsers})
-    socket.emit('hi','hiiiii')
+    socket.broadcast.emit('hi','hiiiii')
   })
   
   
