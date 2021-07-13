@@ -28,6 +28,7 @@ const http = require("http");
 const server = http.createServer(app);
 
 const mongoose = require("mongoose");
+const { Socket } = require("dgram");
 
 const MongoDb_URI = process.env.MongoDb_URI || "mongodb://localhost:27017/test";
 
@@ -199,11 +200,11 @@ let carUsers=[]
 
 car.on("connection", (socket) => {
   const socketId=socket.id
-  socket.on('disconnect',()=>{
+  Socket.on('disconnect',()=>{
     
-    carUsers.filter(user=>user.id!==socket.id)
-    socket.broadcast.emit('nihad',{payload:carUsers})
-    socket.broadcast.emit('hi',socket.id)
+    carUsers=carUsers.filter(user=>user.id!==socket.id)
+    car.broadcast.emit('nihad',{payload:carUsers})
+    car.broadcast.emit('hi',socket.id)
   })
   
   
@@ -340,12 +341,7 @@ car.on("connection", (socket) => {
        }
      }
    }
-  // const caaar = carUsers.reduce((acc,item)=>{
-  //  if(item.id !== userObj.id){
-  //    acc.push(userObj)
-  //   }
-  //   return acc
-  // },[])
+ 
     if(!ifUser){
       carUsers.push(userObj)
     }
@@ -494,8 +490,8 @@ house.on("connection", (socket) => {
     if(!(houseUsers.includes(validUser.userName))  ){
       houseUsers.push(validUser.userName)
     }
-    socket.broadcast.emit('nihad',{payload:houseUsers})
-    socket.broadcast.emit("greeting", users);
+    car.broadcast.emit('nihad',{payload:houseUsers})
+    car.broadcast.emit("greeting", users);
   });
 
   house.emit("liveBid", lastPrice);
