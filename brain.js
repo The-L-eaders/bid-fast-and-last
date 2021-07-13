@@ -123,10 +123,12 @@ app.get("/category", Auth, (req, res) => {
     {
       id: 1,
       name: "car",
+      img:'https://source.unsplash.com/400x400/?car'
     },
     {
       id: 2,
       name: "house",
+      img:'https://source.unsplash.com/400x400/?house'
     },
   ]);
 });
