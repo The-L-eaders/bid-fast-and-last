@@ -2,10 +2,10 @@
     "name": "RealTime",
     "version": "1.0.0",
     "description": "",
-    "main": "brain.js",
+    "main": "server.js",
     "scripts": {
         "test": "jest --coverage --verbose",
-        "start": "node brain.js"
+        "start": "node server.js"
     },
     "repository": {
         "type": "git",

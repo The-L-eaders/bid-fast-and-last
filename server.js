@@ -4,18 +4,22 @@ require("dotenv").config();
 const cors = require("cors");
 const PORT = process.env.PORT || 3000;
 const bcrypt = require("bcrypt");
-
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const mongoose = require("mongoose");
 const app = express();
-// DataBase ..............................................
-const userSchema = require("./model/userSchema.js");
-const productSchema = require("./model/productSchema.js");
 
-const basicAuth = require("./middleWares/basicAuth.js");
-const Auth = require("./middleWares/bearerAuth");
-const notFoundHandler = require("./middleWares/error-handlers/404.js");
-const errorHandler = require("./middleWares/error-handlers/500.js");
+// DataBase ..............................................
+
+const userSchema = require("./src/model/userSchema.js");
+const productSchema = require("./src/model/productSchema.js");
+
+const notFoundHandler = require("./src/middleWares/error-handlers/404.js");
+const errorHandler = require("./src/middleWares/error-handlers/500.js");
+
+const myRoutes = require("./src/routes.js");
+const http = require("http");
+const server = http.createServer(app);
 
 // ....................................................
 app.set("view engine", "ejs");
@@ -23,11 +27,7 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-
-const http = require("http");
-const server = http.createServer(app);
-
-const mongoose = require("mongoose");
+app.use(express.static("./"));
 
 const MongoDb_URI = process.env.MongoDb_URI || "mongodb://localhost:27017/test";
 
@@ -37,8 +37,6 @@ const options = {
   useUnifiedTopology: true,
   useFindAndModify: true,
 };
-
-app.use(express.static("./"));
 
 let io = require("socket.io")(server, {
   cors: {
@@ -60,129 +58,12 @@ mongoose.connect(MongoDb_URI, options, () => {
   console.log("connected to DB");
 });
 
-// Home page -----------------------------------------
+// -----
 
-app.get("/", (req, res) => {
-  res.render("homePage", { token: req.cookies.token });
-});
-
-// bidding page --------------------------------------------
-
-app.get("/car", Auth, async (req, res) => {
-  let data = await productSchema.find({ category: "car" });
-  data.sort((a, b) => {
-    a["createdAt"] - b["createdAt"];
-  });
-
-  if (data[0]) {
-    if (data[0].userId == req.user._id) {
-      res.json({ message: "You Cant bid in your own Product" });
-    } else {
-      res.json({ data: data[0] });
-    }
-  } else {
-    res.json({ data: data[0] });
-  }
-});
-
-app.get("/house", Auth, async (req, res) => {
-  let dataHouse = await productSchema.find({ category: "house" });
-  dataHouse.sort((a, b) => {
-    a["createdAt"] - b["createdAt"];
-  });
-  if (dataHouse[0]) {
-    if (dataHouse[0].userId == req.user._id) {
-      res.json({ message: "You Cant bid in your own Product" });
-    } else {
-      res.json({ data: dataHouse[0] });
-    }
-  } else {
-    res.json({ data: dataHouse[0] });
-  }
-});
-
-// register page ------------------------------------------
-app.get("/register", (req, res) => {
-  res.render("register");
-});
-
-app.post("/register", async (req, res) => {
-  try {
-    const { email, password, userName } = req.body;
-    let saveToDB = await userSchema({ email, userName, password }).save();
-    res.json(saveToDB);
-    // res.render('logIn');
-  } catch (e) {
-    res.send("Email already exists !");
-  }
-});
-
-// Category Page ----------------------------------
-app.get("/category", Auth, (req, res) => {
-  res.json([
-    {
-      id: 1,
-      name: "car",
-    },
-    {
-      id: 2,
-      name: "house",
-    },
-  ]);
-});
-
-// logIn page ------------------------------
-
-app.get("/logIn", (req, res) => {
-  res.render("logIn");
-});
-
-app.post("/logIn", basicAuth, (req, res) => {
-  req.token = req.user.token;
-  res.cookie("token", req.token);
-  res.json({ user: req.user, token: req.token });
-  // res.redirect('/');
-});
-
-app.get("/logout", (req, res) => {
-  res.clearCookie("token");
-  res.json({ user: "loggedOut" });
-  // res.redirect('/');
-});
-
-app.get("/add", Auth, (req, res) => {
-  res.render("addProducts");
-});
-
-app.post("/add", Auth, async (req, res) => {
-  const id = req.user._id;
-  let { name, price, description, image, category, timer } = req.body;
-  let productSave = await productSchema({
-    productName: name,
-    startingPrice: price,
-    productDis: description,
-    productImage: image,
-    category: category,
-    userId: id,
-    timer: timer,
-  }).save();
-  const user = await userSchema.findByIdAndUpdate(
-    { _id: id },
-    { $push: { product: productSave } }
-  );
-  res.json(productSave);
-});
-
-app.post("/getUser", async (req, res) => {
-  let token = req.body.token
-  const user = await userSchema.authenticateWithToken(token);
-  res.json(user);
-});
-
+app.use(myRoutes);
 app.use(errorHandler);
 app.use("*", notFoundHandler);
 
-module.exports = app;
 // ----------------------------------------------------------------------------------------
 
 const car = io.of("/car");
@@ -325,6 +206,7 @@ car.on("connection", (socket) => {
 let lastPrice = 0;
 let houseLast = {};
 let lastTokenHouse = "";
+
 house.on("connection", (socket) => {
   socket.on("increasePrice", (total) => {
     lastPrice = total.lastPrice;
