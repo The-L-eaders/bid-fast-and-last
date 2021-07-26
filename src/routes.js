@@ -113,6 +113,11 @@ router.post("/add", Auth, async (req, res) => {
   res.json(productSave);
 });
 
+router.get("/products", async (req, res) => {
+  let allProducts = await productSchema.find({});
+  res.json(allProducts);
+});
+
 router.post("/getUser", async (req, res) => {
   let token = req.body.token;
   const user = await userSchema.authenticateWithToken(token);
