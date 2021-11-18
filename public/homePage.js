@@ -1,3 +1,6 @@
+// All this code is applied on the front end directory ... you can ignore it
+
+
 const socket = io('/');
 
 let announcementPart = document.getElementById('announ');

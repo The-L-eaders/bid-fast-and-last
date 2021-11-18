@@ -54,7 +54,6 @@ router.post("/register", async (req, res) => {
     const { email, password, userName } = req.body;
     let saveToDB = await userSchema({ email, userName, password }).save();
     res.json(saveToDB);
-    // res.render('logIn');
   } catch (e) {
     res.send("Email already exists !");
   }
@@ -81,13 +80,11 @@ router.post("/logIn", basicAuth, (req, res) => {
   req.token = req.user.token;
   res.cookie("token", req.token);
   res.json({ user: req.user, token: req.token });
-  // res.redirect('/');
 });
 
 router.get("/logout", (req, res) => {
   res.clearCookie("token");
   res.json({ user: "loggedOut" });
-  // res.redirect('/');
 });
 
 router.get("/add", Auth, (req, res) => {

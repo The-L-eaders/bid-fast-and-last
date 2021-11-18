@@ -3,7 +3,7 @@ require("dotenv").config();
 
 const cors = require("cors");
 const PORT = process.env.PORT || 3000;
-const bcrypt = require("bcrypt");
+const MongoDb_URI = process.env.MongoDb_URI || "mongodb://localhost:27017/test";
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
@@ -14,6 +14,7 @@ const app = express();
 const userSchema = require("./src/model/userSchema.js");
 const productSchema = require("./src/model/productSchema.js");
 
+// MiddleWares ...............................................
 const notFoundHandler = require("./src/middleWares/error-handlers/404.js");
 const errorHandler = require("./src/middleWares/error-handlers/500.js");
 
@@ -29,15 +30,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("./"));
 
-const MongoDb_URI = process.env.MongoDb_URI || "mongodb://localhost:27017/test";
-
-const options = {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useUnifiedTopology: true,
-  useFindAndModify: true,
-};
-
+// Create Socket Server
 let io = require("socket.io")(server, {
   cors: {
     origins: ["*"],
@@ -53,12 +46,19 @@ let io = require("socket.io")(server, {
   },
 });
 
-server.listen(PORT, () => console.log("listening " + PORT));
-mongoose.connect(MongoDb_URI, options, () => {
+const configurations = {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useUnifiedTopology: true,
+  useFindAndModify: true,
+};
+// Start the Server after connecting to the DB
+mongoose.connect(MongoDb_URI, configurations, () => {
   console.log("connected to DB");
+  server.listen(PORT, () => console.log("listening " + PORT));
 });
 
-// -----
+// Use Middlewares ...........................
 
 app.use(myRoutes);
 app.use(errorHandler);

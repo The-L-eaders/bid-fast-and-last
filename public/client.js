@@ -1,4 +1,6 @@
 "use strict";
+// All this code is applied on the front end directory ... you can ignore it
+
 
 let pathName = window.location.pathname;
 
